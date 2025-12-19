@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>我的3D照片圣诞树 - 调试版</title>
+  <title>圣诞树 - 手势烟花修复版</title>
   <style>
     body {
       margin: 0;
@@ -14,38 +14,50 @@
       -webkit-user-select: none;
       touch-action: none;
     }
-    /* 调试面板：让你看到当前发生了什么 */
     #debug_console {
       position: absolute;
       top: 10px;
       left: 10px;
-      color: #00ff00; /* 绿色文字 */
-      background: rgba(0, 0, 0, 0.7);
+      color: #00ff00;
+      background: rgba(0, 0, 0, 0.8);
       padding: 10px;
-      font-size: 14px;
+      font-size: 12px;
       font-family: monospace;
       z-index: 999;
       pointer-events: none;
-      max-width: 80%;
+      max-width: 90%;
       white-space: pre-wrap;
+      border: 1px solid #00ff00;
     }
-    /* 为了调试，我们可以让摄像头画面稍微显示一点点，确保你在画面里 */
     #input_video {
       position: absolute;
       bottom: 0;
       right: 0;
-      width: 120px; /* 小窗显示摄像头 */
+      width: 100px;
       height: auto;
       z-index: 998;
-      opacity: 0.8;
-      transform: scaleX(-1); /* 镜像翻转，像照镜子一样 */
+      opacity: 0.6;
+      transform: scaleX(-1);
     }
   </style>
 
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script>
+    window.logError = function(msg) {
+      const el = document.getElementById('debug_console');
+      if(el) el.innerText += '\n[错误] ' + msg;
+      console.error(msg);
+    }
+    window.logInfo = function(msg) {
+      const el = document.getElementById('debug_console');
+      if(el) el.innerText = msg; // 覆盖显示状态
+      console.log(msg);
+    }
+  </script>
+
+  <script src="https://unpkg.com/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous" onerror="window.logError('camera_utils 加载失败! 请检查网络')"></script>
+  <script src="https://unpkg.com/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous" onerror="window.logError('control_utils 加载失败!')"></script>
+  <script src="https://unpkg.com/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous" onerror="window.logError('drawing_utils 加载失败!')"></script>
+  <script src="https://unpkg.com/@mediapipe/hands/hands.js" crossorigin="anonymous" onerror="window.logError('hands.js 加载失败! AI无法启动')"></script>
 
   <script type="importmap">
     {
@@ -58,7 +70,7 @@
 </head>
 
 <body>
-  <div id="debug_console">等待系统初始化...</div>
+  <div id="debug_console">正在连接 AI 服务器...\n如果长时间卡在这里，说明网络无法加载 MediaPipe 库。</div>
   <video id="input_video" playsinline webkit-playsinline></video>
 
   <script type="module">
@@ -67,10 +79,11 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-    // 调试辅助函数
-    const debugEl = document.getElementById('debug_console');
-    function log(msg) {
-        debugEl.innerText = msg;
+    // 再次封装日志函数
+    function log(msg) { window.logInfo(msg); }
+    function appendLog(msg) { 
+        const el = document.getElementById('debug_console');
+        if(el) el.innerText += '\n' + msg;
     }
 
     // ================= 1. 核心布局数据 =================
@@ -78,7 +91,6 @@
       { "name": "giftbox4.glb", "pos": [10.33, -32, 59.09], "rot": 1.66 }, { "name": "giftbox1.glb", "pos": [21.06, -32, -2.97], "rot": 1.06 }, { "name": "giftbox3.glb", "pos": [10.07, -32, 39.08], "rot": 2.33 }, { "name": "giftbox3.glb", "pos": [6.9, -32, 63.75], "rot": 1.26 }, { "name": "giftbox2.glb", "pos": [23.1, -32, 48.07], "rot": 1.23 }, { "name": "giftbox1.glb", "pos": [18.68, -32, 0.85], "rot": 3.13 }, { "name": "giftbox4.glb", "pos": [1, -32, 13.04], "rot": 1.58 }, { "name": "giftbox1.glb", "pos": [-10.65, -32, -14.06], "rot": 0.05 }, { "name": "giftbox4.glb", "pos": [30.9, -32, 12.76], "rot": 1.51 }, { "name": "giftbox5.glb", "pos": [-16.37, -32, 66.98], "rot": 0.73 }, { "name": "giftbox2.glb", "pos": [-44.31, -32, 52.75], "rot": 0.14 }, { "name": "giftbox1.glb", "pos": [4.98, -32, 6.17], "rot": 1.06 }, { "name": "giftbox4.glb", "pos": [3.07, -32, 39.17], "rot": 0.33 }, { "name": "giftbox5.glb", "pos": [22.66, -32, 50.69], "rot": 2.3 }, { "name": "giftbox2.glb", "pos": [19.69, -32, -18.06], "rot": 2.8 }, { "name": "giftbox3.glb", "pos": [39.87, -32, 22.91], "rot": 1.87 }, { "name": "giftbox4.glb", "pos": [-25.88, -32, 43.69], "rot": 1.18 }, { "name": "giftbox2.glb", "pos": [33.85, -32, -3.28], "rot": 2.15 }, { "name": "giftbox2.glb", "pos": [18.23, -32, 22.29], "rot": 1.63 }
     ];
 
-    // ... (Scene setup remains same) ...
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
     scene.environment = scene.background;
@@ -110,12 +122,8 @@
     document.body.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.autoRotate = false;
-    controls.minDistance = 1;
-    controls.maxDistance = 1000;
-    controls.target.set(0, 5, 0);
+    controls.enableDamping = true; controls.dampingFactor = 0.05; controls.autoRotate = false;
+    controls.minDistance = 1; controls.maxDistance = 1000; controls.target.set(0, 5, 0);
 
     // Globals
     const floatingObjects = [];
@@ -138,294 +146,139 @@
     const touchStartPos = new THREE.Vector2();
     let fireworks = [];
     let lastGesture = 'UNKNOWN';
-    const tmpV3a = new THREE.Vector3();
-    const tmpV3b = new THREE.Vector3();
-    const tmpV3c = new THREE.Vector3();
-    const tmpBox = new THREE.Box3();
+    const tmpV3a = new THREE.Vector3(); const tmpV3b = new THREE.Vector3(); const tmpV3c = new THREE.Vector3(); const tmpBox = new THREE.Box3();
 
-    // Helpers
     function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-    function findInteractiveRoot(obj) {
-      let cur = obj;
-      while (cur && cur !== scene) {
-        if (cur.userData && cur.userData.isInteractive) return cur;
-        cur = cur.parent;
-      }
-      return null;
-    }
-    function faceCameraUprightY(obj) {
-      obj.getWorldPosition(tmpV3a);
-      camera.getWorldPosition(tmpV3b);
-      const dx = tmpV3b.x - tmpV3a.x;
-      const dz = tmpV3b.z - tmpV3a.z;
-      const yaw = Math.atan2(dx, dz);
-      obj.rotation.x = 0; obj.rotation.z = 0; obj.rotation.y = yaw;
-    }
-    function getFocusPosByDistance(dist) {
-      const focusPos = new THREE.Vector3();
-      camera.getWorldDirection(focusPos).multiplyScalar(dist).add(camera.position);
-      return focusPos;
-    }
-    function computeSafeDistance(radiusWorld) {
-      const vFov = THREE.MathUtils.degToRad(camera.fov);
-      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
-      const minHalfFov = Math.min(vFov, hFov) / 2;
-      const margin = 2.0;
-      const dist = (radiusWorld * margin) / Math.tan(minHalfFov);
-      return dist + radiusWorld * 0.8;
-    }
-    function alignLocalCenterToWorldPoint(obj, localCenter, worldTarget) {
-      const worldCenterNow = obj.localToWorld(localCenter.clone());
-      const delta = worldTarget.clone().sub(worldCenterNow);
-      obj.position.add(delta);
-    }
-    function getWorldRadius(obj) {
-      tmpBox.setFromObject(obj);
-      const size = tmpBox.getSize(tmpV3c);
-      let r = 0.5 * Math.sqrt(size.x * size.x + size.y * size.y + size.z * size.z);
-      r = clamp(r, 2.0, 40.0);
-      return r;
-    }
-    function getTreeTopWorldPoint(out = new THREE.Vector3()) {
-      const box = new THREE.Box3();
-      let has = false;
-      for (const obj of floatingObjects) {
-        if (!obj.userData) continue;
-        if (obj.userData.pickType === 'gift') continue;
-        if (obj.userData.isTreeTop) continue;
-        box.expandByObject(obj);
-        has = true;
-      }
-      if (!has) { out.set(controls.target.x, 30, controls.target.z); return out; }
-      const topY = box.max.y;
-      const centerX = (box.min.x + box.max.x) / 2;
-      const centerZ = (box.min.z + box.max.z) / 2;
-      out.set(centerX, topY, centerZ);
-      return out;
-    }
-    function snapBottomCenterToWorldPoint(obj, worldPoint) {
-      const local = obj.userData.bottomCenterLocal;
-      if (!local) return;
-      const worldNow = obj.localToWorld(local.clone());
-      const delta = worldPoint.clone().sub(worldNow);
-      obj.position.add(delta);
-    }
+    function findInteractiveRoot(obj) { let cur = obj; while (cur && cur !== scene) { if (cur.userData && cur.userData.isInteractive) return cur; cur = cur.parent; } return null; }
+    function faceCameraUprightY(obj) { obj.getWorldPosition(tmpV3a); camera.getWorldPosition(tmpV3b); const dx = tmpV3b.x - tmpV3a.x; const dz = tmpV3b.z - tmpV3a.z; const yaw = Math.atan2(dx, dz); obj.rotation.x = 0; obj.rotation.z = 0; obj.rotation.y = yaw; }
+    function getFocusPosByDistance(dist) { const focusPos = new THREE.Vector3(); camera.getWorldDirection(focusPos).multiplyScalar(dist).add(camera.position); return focusPos; }
+    function computeSafeDistance(radiusWorld) { const vFov = THREE.MathUtils.degToRad(camera.fov); const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect); const minHalfFov = Math.min(vFov, hFov) / 2; const margin = 2.0; const dist = (radiusWorld * margin) / Math.tan(minHalfFov); return dist + radiusWorld * 0.8; }
+    function alignLocalCenterToWorldPoint(obj, localCenter, worldTarget) { const worldCenterNow = obj.localToWorld(localCenter.clone()); const delta = worldTarget.clone().sub(worldCenterNow); obj.position.add(delta); }
+    function getWorldRadius(obj) { tmpBox.setFromObject(obj); const size = tmpBox.getSize(tmpV3c); let r = 0.5 * Math.sqrt(size.x * size.x + size.y * size.y + size.z * size.z); r = clamp(r, 2.0, 40.0); return r; }
+    function getTreeTopWorldPoint(out = new THREE.Vector3()) { const box = new THREE.Box3(); let has = false; for (const obj of floatingObjects) { if (!obj.userData) continue; if (obj.userData.pickType === 'gift') continue; if (obj.userData.isTreeTop) continue; box.expandByObject(obj); has = true; } if (!has) { out.set(controls.target.x, 30, controls.target.z); return out; } const topY = box.max.y; const centerX = (box.min.x + box.max.x) / 2; const centerZ = (box.min.z + box.max.z) / 2; out.set(centerX, topY, centerZ); return out; }
+    function snapBottomCenterToWorldPoint(obj, worldPoint) { const local = obj.userData.bottomCenterLocal; if (!local) return; const worldNow = obj.localToWorld(local.clone()); const delta = worldPoint.clone().sub(worldNow); obj.position.add(delta); }
 
-    // Stars
-    function createGlowTexture() {
-      const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
-      const ctx = canvas.getContext('2d');
-      const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-      g.addColorStop(0, 'rgba(255,255,255,1)');
-      g.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = g; ctx.fillRect(0, 0, 32, 32);
-      const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; return t;
-    }
-    const starsCount = 1500;
-    const starsPos = new Float32Array(starsCount * 3);
-    const starsColors = new Float32Array(starsCount * 3);
-    const colorObj = new THREE.Color();
+    function createGlowTexture() { const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32; const ctx = canvas.getContext('2d'); const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, 32, 32); const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; return t; }
+    const starsCount = 1500; const starsPos = new Float32Array(starsCount * 3); const starsColors = new Float32Array(starsCount * 3); const colorObj = new THREE.Color();
     for (let i = 0; i < starsCount * 3; i++) starsPos[i] = (Math.random() - 0.5) * 1500;
-    for (let i = 0; i < starsCount; i++) {
-      const tone = Math.random();
-      if (tone > 0.8) colorObj.setHex(0xffd700); else if (tone > 0.5) colorObj.setHex(0x88ccff); else colorObj.setHex(0xffffff);
-      starsColors[i * 3] = colorObj.r; starsColors[i * 3 + 1] = colorObj.g; starsColors[i * 3 + 2] = colorObj.b;
-    }
-    const starGeo = new THREE.BufferGeometry();
-    starGeo.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
-    starGeo.setAttribute('color', new THREE.BufferAttribute(starsColors, 3));
+    for (let i = 0; i < starsCount; i++) { const tone = Math.random(); if (tone > 0.8) colorObj.setHex(0xffd700); else if (tone > 0.5) colorObj.setHex(0x88ccff); else colorObj.setHex(0xffffff); starsColors[i * 3] = colorObj.r; starsColors[i * 3 + 1] = colorObj.g; starsColors[i * 3 + 2] = colorObj.b; }
+    const starGeo = new THREE.BufferGeometry(); starGeo.setAttribute('position', new THREE.BufferAttribute(starsPos, 3)); starGeo.setAttribute('color', new THREE.BufferAttribute(starsColors, 3));
     const starMat = new THREE.PointsMaterial({ size: 2.5, map: createGlowTexture(), vertexColors: true, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
-    const starMesh = new THREE.Points(starGeo, starMat);
-    scene.add(starMesh);
+    const starMesh = new THREE.Points(starGeo, starMat); scene.add(starMesh);
 
-    // Tree Objects
-    const TOTAL_LEAVES = 600; 
-    const TREE_HEIGHT = 60; const TREE_RADIUS = 20;
-    const photoFiles = [];
-    for (let i = 0; i <= 61; i++) photoFiles.push(i === 0 ? 'photos/A.jpg' : `photos/A (${i}).jpg`);
-    const leafList = [...photoFiles];
-    while (leafList.length < TOTAL_LEAVES) leafList.push(photoFiles[Math.floor(Math.random() * photoFiles.length)]);
-    leafList.sort(() => Math.random() - 0.5);
+    const TOTAL_LEAVES = 600; const TREE_HEIGHT = 60; const TREE_RADIUS = 20;
+    const photoFiles = []; for (let i = 0; i <= 61; i++) photoFiles.push(i === 0 ? 'photos/A.jpg' : `photos/A (${i}).jpg`);
+    const leafList = [...photoFiles]; while (leafList.length < TOTAL_LEAVES) leafList.push(photoFiles[Math.floor(Math.random() * photoFiles.length)]); leafList.sort(() => Math.random() - 0.5);
 
-    function loadCompressedTexture(url, callback) {
-      const image = new Image(); image.src = url; image.crossOrigin = "Anonymous";
-      image.onload = () => {
-        const canvas = document.createElement('canvas'); const maxSize = 256;
-        let width = image.width; let height = image.height;
-        if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } }
-        else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } }
-        canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0, width, height);
-        const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; callback(texture);
-      };
-    }
+    function loadCompressedTexture(url, callback) { const image = new Image(); image.src = url; image.crossOrigin = "Anonymous"; image.onload = () => { const canvas = document.createElement('canvas'); const maxSize = 256; let width = image.width; let height = image.height; if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } } else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0, width, height); const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; callback(texture); }; }
     function setupOrbitalData(mesh, scaleFactor) {
       mesh.userData.originPos = mesh.position.clone(); mesh.userData.originRot = mesh.rotation.clone(); mesh.userData.originScale = mesh.scale.clone();
-      mesh.userData.orbitRadius = (isMobile ? 100 : 120) + Math.random() * 100;
-      mesh.userData.orbitY = (Math.random() - 0.5) * 120;
-      mesh.userData.orbitAngle = Math.random() * Math.PI * 2;
-      mesh.userData.orbitSpeed = 0.001 + Math.random() * 0.002;
-      mesh.userData.explodedScale = mesh.scale.clone().multiplyScalar(scaleFactor);
-      mesh.userData.isExplodedVisible = mesh.type === 'Group' ? true : (Math.random() < 0.25);
-      mesh.userData.floatSpeed = { x: (Math.random() - 0.5) * 0.01, y: (Math.random() - 0.5) * 0.01, z: 0 };
-      mesh.userData.isInteractive = true; mesh.userData.pinned = false; mesh.userData.pinnedDist = null;
-      mesh.userData.pinnedRot = new THREE.Euler(0, 0, 0); mesh.userData.localCenter = new THREE.Vector3(0, 0, 0);
-      mesh.userData.inspectionPos = new THREE.Vector3(); mesh.userData.inspectionBaseScale = 3.0; mesh.userData.currentInspectionScale = 3.0; 
-      mesh.userData.pickType = (mesh.type === 'Group') ? 'gift' : (mesh.geometry && mesh.geometry.type === 'PlaneGeometry') ? 'photo' : 'other';
-      mesh.userData.isTreeTop = false; mesh.userData.bottomCenterLocal = null; mesh.userData.yawOffset = 0; mesh.userData.treeFacingSet = false;
+      mesh.userData.orbitRadius = (isMobile ? 100 : 120) + Math.random() * 100; mesh.userData.orbitY = (Math.random() - 0.5) * 120; mesh.userData.orbitAngle = Math.random() * Math.PI * 2; mesh.userData.orbitSpeed = 0.001 + Math.random() * 0.002;
+      mesh.userData.explodedScale = mesh.scale.clone().multiplyScalar(scaleFactor); mesh.userData.isExplodedVisible = mesh.type === 'Group' ? true : (Math.random() < 0.25);
+      mesh.userData.floatSpeed = { x: (Math.random() - 0.5) * 0.01, y: (Math.random() - 0.5) * 0.01, z: 0 }; mesh.userData.isInteractive = true; mesh.userData.pinned = false; mesh.userData.pinnedDist = null;
+      mesh.userData.pinnedRot = new THREE.Euler(0, 0, 0); mesh.userData.localCenter = new THREE.Vector3(0, 0, 0); mesh.userData.inspectionPos = new THREE.Vector3(); mesh.userData.inspectionBaseScale = 3.0; mesh.userData.currentInspectionScale = 3.0;
+      mesh.userData.pickType = (mesh.type === 'Group') ? 'gift' : (mesh.geometry && mesh.geometry.type === 'PlaneGeometry') ? 'photo' : 'other'; mesh.userData.isTreeTop = false; mesh.userData.bottomCenterLocal = null; mesh.userData.yawOffset = 0; mesh.userData.treeFacingSet = false;
       floatingObjects.push(mesh);
     }
 
-    leafList.forEach((file, i) => {
-      loadCompressedTexture(file, (texture) => {
-        const imgAspect = texture.image.width / texture.image.height; const baseSize = 3;
-        let w = imgAspect > 1 ? baseSize * imgAspect : baseSize; let h = imgAspect > 1 ? baseSize : baseSize / imgAspect;
-        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true }));
-        const h_norm = Math.pow(i / TOTAL_LEAVES, 0.5); const y = (TREE_HEIGHT / 2) - (h_norm * TREE_HEIGHT);
-        const r = (TREE_RADIUS * h_norm) + (Math.random() * 5); const theta = Math.random() * Math.PI * 2;
-        mesh.position.set(r * Math.cos(theta), y, r * Math.sin(theta));
-        mesh.lookAt(0, y, 0); mesh.rotateX(-Math.PI / 2); mesh.rotateX(-(Math.random() * 0.5 + 0.3));
-        mesh.rotateY((Math.random() - 0.5) * 0.5); mesh.rotateZ(Math.PI + (Math.random() - 0.5) * 0.5);
-        setupOrbitalData(mesh, 3.0); mesh.userData.inspectionBaseScale = 1.5; mesh.userData.currentInspectionScale = 1.5; mesh.userData.localCenter.set(0, 0, 0);
-        treeRoot.add(mesh);
-      });
-    });
+    leafList.forEach((file, i) => { loadCompressedTexture(file, (texture) => { const imgAspect = texture.image.width / texture.image.height; const baseSize = 3; let w = imgAspect > 1 ? baseSize * imgAspect : baseSize; let h = imgAspect > 1 ? baseSize : baseSize / imgAspect; const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true })); const h_norm = Math.pow(i / TOTAL_LEAVES, 0.5); const y = (TREE_HEIGHT / 2) - (h_norm * TREE_HEIGHT); const r = (TREE_RADIUS * h_norm) + (Math.random() * 5); const theta = Math.random() * Math.PI * 2; mesh.position.set(r * Math.cos(theta), y, r * Math.sin(theta)); mesh.lookAt(0, y, 0); mesh.rotateX(-Math.PI / 2); mesh.rotateX(-(Math.random() * 0.5 + 0.3)); mesh.rotateY((Math.random() - 0.5) * 0.5); mesh.rotateZ(Math.PI + (Math.random() - 0.5) * 0.5); setupOrbitalData(mesh, 3.0); mesh.userData.inspectionBaseScale = 1.5; mesh.userData.currentInspectionScale = 1.5; mesh.userData.localCenter.set(0, 0, 0); treeRoot.add(mesh); }); });
 
     const colors = [0xDC143C, 0xFFD700, 0x228B22, 0xE0E0E0];
-    const baseSphereGeo = new THREE.SphereGeometry(0.3, 32, 32); const sphereCount = 450; 
-    for (let i = 0; i < sphereCount; i++) {
-      const sphere = new THREE.Mesh(baseSphereGeo, new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], metalness: 0.7, roughness: 0.35, envMapIntensity: 1.0 }));
-      const scale = Math.random() * 1.2 + 0.8; sphere.scale.set(scale, scale, scale);
-      const h_norm = Math.pow(i / sphereCount, 0.7); const y = (TREE_HEIGHT / 2) - (h_norm * TREE_HEIGHT);
-      const r = (TREE_RADIUS * h_norm) + (Math.random() - 0.5) * 4; const theta = Math.random() * Math.PI * 2;
-      sphere.position.set(r * Math.cos(theta), y, r * Math.sin(theta));
-      setupOrbitalData(sphere, 2.5); sphere.userData.localCenter.set(0, 0, 0); treeRoot.add(sphere);
-    }
+    const baseSphereGeo = new THREE.SphereGeometry(0.3, 32, 32); const sphereCount = 450;
+    for (let i = 0; i < sphereCount; i++) { const sphere = new THREE.Mesh(baseSphereGeo, new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], metalness: 0.7, roughness: 0.35, envMapIntensity: 1.0 })); const scale = Math.random() * 1.2 + 0.8; sphere.scale.set(scale, scale, scale); const h_norm = Math.pow(i / sphereCount, 0.7); const y = (TREE_HEIGHT / 2) - (h_norm * TREE_HEIGHT); const r = (TREE_RADIUS * h_norm) + (Math.random() - 0.5) * 4; const theta = Math.random() * Math.PI * 2; sphere.position.set(r * Math.cos(theta), y, r * Math.sin(theta)); setupOrbitalData(sphere, 2.5); sphere.userData.localCenter.set(0, 0, 0); treeRoot.add(sphere); }
 
     const gltfLoader = new GLTFLoader();
-    function loadClawhauserGLB(url) {
-      gltfLoader.load(url, (gltf) => {
-        const model = gltf.scene; const root = new THREE.Group(); root.add(model);
-        model.scale.set(10, 10, 10); model.rotation.set(-THREE.MathUtils.degToRad(20), 0, Math.PI / 2);
-        model.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
-        root.position.set(0, TREE_HEIGHT / 2, 0); setupOrbitalData(root, 2.0);
-        root.userData.isExplodedVisible = true; root.userData.isTreeTop = true; root.userData.yawOffset = -THREE.MathUtils.degToRad(18);
-        root.userData.orbitRadius = 80; root.userData.orbitY = TREE_HEIGHT / 2 + 10; root.userData.treeFacingSet = false;
-        treeRoot.add(root); scene.updateMatrixWorld(true);
-        const b = new THREE.Box3().setFromObject(root); const center = new THREE.Vector3(); b.getCenter(center);
-        const bottomCenterWorld = new THREE.Vector3((b.min.x + b.max.x) / 2, b.min.y, (b.min.z + b.max.z) / 2);
-        root.userData.bottomCenterLocal = root.worldToLocal(bottomCenterWorld.clone());
-        const localCenter = root.worldToLocal(center.clone()); root.userData.localCenter.copy(localCenter);
-      }, undefined, (err) => console.log("GLB error", err));
-    }
+    function loadClawhauserGLB(url) { gltfLoader.load(url, (gltf) => { const model = gltf.scene; const root = new THREE.Group(); root.add(model); model.scale.set(10, 10, 10); model.rotation.set(-THREE.MathUtils.degToRad(20), 0, Math.PI / 2); model.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } }); root.position.set(0, TREE_HEIGHT / 2, 0); setupOrbitalData(root, 2.0); root.userData.isExplodedVisible = true; root.userData.isTreeTop = true; root.userData.yawOffset = -THREE.MathUtils.degToRad(18); root.userData.orbitRadius = 80; root.userData.orbitY = TREE_HEIGHT / 2 + 10; root.userData.treeFacingSet = false; treeRoot.add(root); scene.updateMatrixWorld(true); const b = new THREE.Box3().setFromObject(root); const center = new THREE.Vector3(); b.getCenter(center); const bottomCenterWorld = new THREE.Vector3((b.min.x + b.max.x) / 2, b.min.y, (b.min.z + b.max.z) / 2); root.userData.bottomCenterLocal = root.worldToLocal(bottomCenterWorld.clone()); const localCenter = root.worldToLocal(center.clone()); root.userData.localCenter.copy(localCenter); }, undefined, (err) => console.log("GLB error", err)); }
     loadClawhauserGLB('clawhauser.glb');
 
-    const giftFiles = ['giftbox1.glb', 'giftbox2.glb', 'giftbox3.glb', 'giftbox4.glb', 'giftbox5.glb'];
-    const loadedModels = {}; let loadCount = 0;
+    const giftFiles = ['giftbox1.glb', 'giftbox2.glb', 'giftbox3.glb', 'giftbox4.glb', 'giftbox5.glb']; const loadedModels = {}; let loadCount = 0;
     giftFiles.forEach(fileName => { gltfLoader.load(fileName, (gltf) => { loadedModels[fileName] = gltf.scene; checkLoadFinish(); }, undefined, () => { console.warn(fileName + " 加载失败"); checkLoadFinish(); }); });
     function checkLoadFinish() { loadCount++; if (loadCount === giftFiles.length) spawnFixedBoxes(); }
-    function spawnFixedBoxes() {
-      FIXED_LAYOUT.forEach(data => {
-        const template = loadedModels[data.name]; if (!template) return;
-        const clone = template.clone(true); clone.scale.set(15.0, 15.0, 15.0);
-        const box3 = new THREE.Box3().setFromObject(clone); const yOffset = -box3.min.y;
-        const group = new THREE.Group(); clone.position.y = yOffset; group.add(clone);
-        group.position.set(data.pos[0], data.pos[1], data.pos[2]); group.rotation.y = data.rot;
-        group.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
-        scene.add(group); setupOrbitalData(group, 1.5); group.userData.orbitY = (Math.random() - 0.5) * 40 - 40;
-        group.userData.isExplodedVisible = true; group.userData.pickType = 'gift';
-        const localCenter = box3.getCenter(new THREE.Vector3()); localCenter.y += yOffset; group.userData.localCenter.copy(localCenter);
-      });
-    }
+    function spawnFixedBoxes() { FIXED_LAYOUT.forEach(data => { const template = loadedModels[data.name]; if (!template) return; const clone = template.clone(true); clone.scale.set(15.0, 15.0, 15.0); const box3 = new THREE.Box3().setFromObject(clone); const yOffset = -box3.min.y; const group = new THREE.Group(); clone.position.y = yOffset; group.add(clone); group.position.set(data.pos[0], data.pos[1], data.pos[2]); group.rotation.y = data.rot; group.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } }); scene.add(group); setupOrbitalData(group, 1.5); group.userData.orbitY = (Math.random() - 0.5) * 40 - 40; group.userData.isExplodedVisible = true; group.userData.pickType = 'gift'; const localCenter = box3.getCenter(new THREE.Vector3()); localCenter.y += yOffset; group.userData.localCenter.copy(localCenter); }); }
 
-    function createLightStrip() {
-      const lightStripGroup = new THREE.Group();
-      const stripBottomY = -TREE_HEIGHT / 2 + 2; const stripTopY = TREE_HEIGHT / 2 - 5; const stripHeight = stripTopY - stripBottomY;
-      const radiusBottom = TREE_RADIUS + 2; const radiusTop = 4; const turns = 6; const lightCount = 250;
-      const bulbGeo = new THREE.SphereGeometry(isMobile ? 0.1 : 0.15, 8, 8);
-      for (let i = 0; i < lightCount; i++) {
-        const t = i / (lightCount - 1); const angle = t * turns * Math.PI * 2;
-        const currentRadius = radiusBottom * (1 - t) + radiusTop * t;
-        const y = stripBottomY + t * stripHeight;
-        const x = Math.cos(angle) * currentRadius; const z = Math.sin(angle) * currentRadius;
-        const bulbMat = new THREE.MeshStandardMaterial({ color: 0xffdd88, emissive: 0xffaa00, emissiveIntensity: 2.0, roughness: 0.3 });
-        const bulb = new THREE.Mesh(bulbGeo, bulbMat); bulb.position.set(x, y, z); 
-        bulb.userData.blinkSpeed = 0.01 + Math.random() * 0.02; bulb.userData.blinkOffset = Math.random() * 100; 
-        lightStripGroup.add(bulb); lightBulbs.push(bulb); 
-      }
-      const mainLight = new THREE.PointLight(0xffaa33, 2.0, 80); mainLight.position.set(0, 0, 0); lightStripGroup.add(mainLight);
-      treeRoot.add(lightStripGroup); setupOrbitalData(lightStripGroup, 0.0001);
-      lightStripGroup.userData.isExplodedVisible = false; lightStripGroup.userData.pickType = 'other'; lightStripGroup.userData.localCenter.set(0, 0, 0);
-    }
+    function createLightStrip() { const lightStripGroup = new THREE.Group(); const stripBottomY = -TREE_HEIGHT / 2 + 2; const stripTopY = TREE_HEIGHT / 2 - 5; const stripHeight = stripTopY - stripBottomY; const radiusBottom = TREE_RADIUS + 2; const radiusTop = 4; const turns = 6; const lightCount = 250; const bulbGeo = new THREE.SphereGeometry(isMobile ? 0.1 : 0.15, 8, 8); for (let i = 0; i < lightCount; i++) { const t = i / (lightCount - 1); const angle = t * turns * Math.PI * 2; const currentRadius = radiusBottom * (1 - t) + radiusTop * t; const y = stripBottomY + t * stripHeight; const x = Math.cos(angle) * currentRadius; const z = Math.sin(angle) * currentRadius; const bulbMat = new THREE.MeshStandardMaterial({ color: 0xffdd88, emissive: 0xffaa00, emissiveIntensity: 2.0, roughness: 0.3 }); const bulb = new THREE.Mesh(bulbGeo, bulbMat); bulb.position.set(x, y, z); bulb.userData.blinkSpeed = 0.01 + Math.random() * 0.02; bulb.userData.blinkOffset = Math.random() * 100; lightStripGroup.add(bulb); lightBulbs.push(bulb); } const mainLight = new THREE.PointLight(0xffaa33, 2.0, 80); mainLight.position.set(0, 0, 0); lightStripGroup.add(mainLight); treeRoot.add(lightStripGroup); setupOrbitalData(lightStripGroup, 0.0001); lightStripGroup.userData.isExplodedVisible = false; lightStripGroup.userData.pickType = 'other'; lightStripGroup.userData.localCenter.set(0, 0, 0); }
     createLightStrip();
 
-    function createFirework() {
-        const particleCount = isMobile ? 100 : 200; 
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-        const velocities = [];
-        const fireworkColor = new THREE.Color(); fireworkColor.setHSL(Math.random(), 1.0, 0.5);
-        for (let i = 0; i < particleCount; i++) {
-            positions[i * 3] = 0; positions[i * 3 + 1] = TREE_HEIGHT / 2 + 20; positions[i * 3 + 2] = 0;
-            colors[i * 3] = fireworkColor.r; colors[i * 3 + 1] = fireworkColor.g; colors[i * 3 + 2] = fireworkColor.b;
-            const velocity = new THREE.Vector3((Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2);
-            velocity.normalize().multiplyScalar(Math.random() * 2 + 1); velocities.push(velocity);
-        }
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        const particleMaterial = new THREE.PointsMaterial({ size: 1.5, vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, opacity: 1.0, map: createGlowTexture(), depthWrite: false });
-        const particleSystem = new THREE.Points(geometry, particleMaterial);
-        particleSystem.userData.velocities = velocities; particleSystem.userData.life = 1.0; 
-        scene.add(particleSystem); fireworks.push(particleSystem);
-    }
+    function createFirework() { const particleCount = isMobile ? 100 : 200; const geometry = new THREE.BufferGeometry(); const positions = new Float32Array(particleCount * 3); const colors = new Float32Array(particleCount * 3); const velocities = []; const fireworkColor = new THREE.Color(); fireworkColor.setHSL(Math.random(), 1.0, 0.5); for (let i = 0; i < particleCount; i++) { positions[i * 3] = 0; positions[i * 3 + 1] = TREE_HEIGHT / 2 + 20; positions[i * 3 + 2] = 0; colors[i * 3] = fireworkColor.r; colors[i * 3 + 1] = fireworkColor.g; colors[i * 3 + 2] = fireworkColor.b; const velocity = new THREE.Vector3((Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2); velocity.normalize().multiplyScalar(Math.random() * 2 + 1); velocities.push(velocity); } geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)); geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3)); const particleMaterial = new THREE.PointsMaterial({ size: 1.5, vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, opacity: 1.0, map: createGlowTexture(), depthWrite: false }); const particleSystem = new THREE.Points(geometry, particleMaterial); particleSystem.userData.velocities = velocities; particleSystem.userData.life = 1.0; scene.add(particleSystem); fireworks.push(particleSystem); }
+    function updateFireworks() { for (let i = fireworks.length - 1; i >= 0; i--) { const firework = fireworks[i]; const positions = firework.geometry.attributes.position.array; const velocities = firework.userData.velocities; firework.userData.life -= 0.015; firework.material.opacity = firework.userData.life; for (let j = 0; j < velocities.length; j++) { velocities[j].y -= 0.03; positions[j * 3] += velocities[j].x; positions[j * 3 + 1] += velocities[j].y; positions[j * 3 + 2] += velocities[j].z; } firework.geometry.attributes.position.needsUpdate = true; if (firework.userData.life <= 0) { scene.remove(firework); firework.geometry.dispose(); firework.material.dispose(); fireworks.splice(i, 1); } } }
 
-    function updateFireworks() {
-        for (let i = fireworks.length - 1; i >= 0; i--) {
-            const firework = fireworks[i]; const positions = firework.geometry.attributes.position.array; const velocities = firework.userData.velocities;
-            firework.userData.life -= 0.015; firework.material.opacity = firework.userData.life;
-            for (let j = 0; j < velocities.length; j++) {
-                velocities[j].y -= 0.03; positions[j * 3] += velocities[j].x; positions[j * 3 + 1] += velocities[j].y; positions[j * 3 + 2] += velocities[j].z;
-            }
-            firework.geometry.attributes.position.needsUpdate = true;
-            if (firework.userData.life <= 0) { scene.remove(firework); firework.geometry.dispose(); firework.material.dispose(); fireworks.splice(i, 1); }
-        }
-    }
-
-    // MediaPipe Logic
     const videoElement = document.getElementById('input_video');
-
     function onResults(results) {
-        if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-            lastGesture = 'UNKNOWN';
-            log("未检测到手 (No Hands)");
+        if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) { lastGesture = 'UNKNOWN'; return; }
+        const landmarks = results.multiHandLandmarks[0]; const currentGesture = detectGesture(landmarks);
+        let statusText = `手势: ${currentGesture} | 状态: ${isExploded ? '炸开' : '树'}`;
+        log(statusText);
+        if (!isExploded && lastGesture === 'FIST' && currentGesture === 'OPEN') { appendLog("触发烟花!"); for(let i=0; i<3; i++) setTimeout(() => createFirework(), i * 300); }
+        if (currentGesture !== 'BETWEEN') lastGesture = currentGesture;
+    }
+    function detectGesture(landmarks) { const wrist = landmarks[0]; const fingertips = [8, 12, 16, 20]; let foldedFingers = 0; fingertips.forEach(idx => { const tip = landmarks[idx]; const dist = Math.sqrt(Math.pow(tip.x - wrist.x, 2) + Math.pow(tip.y - wrist.y, 2)); if (dist < 0.15) foldedFingers++; }); if (foldedFingers >= 3) return 'FIST'; if (foldedFingers === 0) return 'OPEN'; return 'BETWEEN'; }
+
+    async function initMediaPipe() {
+        // 安全检查：如果 Hands 没加载成功，直接停止，防止报错卡死
+        if (typeof Hands === 'undefined') {
+            log("严重错误: MediaPipe 脚本加载失败！\n无法启动手势识别。\n请检查网络连接 (需要访问 unpkg.com)");
             return;
         }
 
-        const landmarks = results.multiHandLandmarks[0];
-        const currentGesture = detectGesture(landmarks);
-        
-        // 可视化显示当前手势
-        let statusText = `检测到手势: ${currentGesture}\n`;
-        statusText += `上一帧: ${lastGesture}\n`;
-        if (isExploded) statusText += "状态: 已炸开 (不触发)\n";
-        else statusText += "状态: 圣诞树模式 (可触发)\n";
-        log(statusText);
+        log("开始加载 AI 模型 (文件较大，请稍候)...");
+        const hands = new Hands({locateFile: (file) => {
+            // 使用 unpkg 源加载模型文件
+            return `https://unpkg.com/@mediapipe/hands/${file}`;
+        }});
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        hands.onResults(onResults);
 
-        if (!isExploded && lastGesture === 'FIST' && currentGesture === 'OPEN') {
-            log(">>> 触发烟花！！！ <<<");
-            for(let i=0; i<3; i++) setTimeout(() => createFirework(), i * 300);
-        }
-
-        if (currentGesture !== 'BETWEEN') {
-            lastGesture = currentGesture;
+        try {
+            const camera = new Camera(videoElement, {
+                onFrame: async () => { await hands.send({image: videoElement}); },
+                width: 320, height: 240, facingMode: 'user'
+            });
+            await camera.start();
+            log("摄像头已开启，请伸手...");
+        } catch (e) {
+            appendLog("摄像头错误: " + e.message);
         }
     }
 
-    function detectGesture(landmarks) {
-        const wrist = landmarks[0];
-        const fingertips = [8, 12, 16, 20]; 
-        let foldedFingers = 0;
-        fingertips.forEach(idx => {
-            const tip = landmarks[idx];
-            const dist = Math.sqrt(Math.pow(tip.x - wrist.x, 2) + Math.pow(tip.y - wrist.y,
+    // Interactions
+    window.addEventListener('touchstart', (event) => { touchStartTime = Date.now(); touchStartPos.set(event.touches[0].clientX, event.touches[0].clientY); if (event.touches.length > 1) { isMultiTouch = true; if (activeUUID) { const obj = floatingObjects.find(o => o.uuid === activeUUID); if (obj && (obj.userData.isTreeTop || obj.userData.pickType === 'photo')) { initialPinchDistance = getPinchDistance(event); initialScale = obj.userData.currentInspectionScale; } } } else { isMultiTouch = false; } isDragMove = false; }, { passive: false });
+    window.addEventListener('touchmove', (event) => { if (event.touches.length === 2) { isMultiTouch = true; if (activeUUID && initialPinchDistance > 0) { const obj = floatingObjects.find(o => o.uuid === activeUUID); if (obj && (obj.userData.isTreeTop || obj.userData.pickType === 'photo')) { const currentDistance = getPinchDistance(event); const scaleFactor = currentDistance / initialPinchDistance; const minScale = 0.5; const maxScale = obj.userData.isTreeTop ? 6.0 : 4.0; obj.userData.currentInspectionScale = clamp(initialScale * scaleFactor, minScale, maxScale); } } event.preventDefault(); return; } const dx = event.touches[0].clientX - touchStartPos.x; const dy = event.touches[0].clientY - touchStartPos.y; if (Math.sqrt(dx * dx + dy * dy) > 10) { isDragMove = true; } }, { passive: false });
+    window.addEventListener('pointermove', (event) => { if (!isInspectionDragging || !activeUUID) return; const obj = floatingObjects.find(o => o.uuid === activeUUID); if (!obj || !obj.userData.isTreeTop) return; const deltaX = event.clientX - previousMouse.x; const deltaY = event.clientY - previousMouse.y; const rotateSpeed = isMobile ? 0.008 : 0.005; obj.rotation.y += deltaX * rotateSpeed; obj.rotation.x += deltaY * rotateSpeed; previousMouse.set(event.clientX, event.clientY); });
+    window.addEventListener('pointerdown', (event) => { previousMouse.set(event.clientX, event.clientY); if (activeUUID) { const obj = floatingObjects.find(o => o.uuid === activeUUID); if (obj && obj.userData.isTreeTop) { mouse.x = (event.clientX / window.innerWidth) * 2 - 1; mouse.y = -(event.clientY / window.innerHeight) * 2 + 1; raycaster.setFromCamera(mouse, camera); const hits = raycaster.intersectObject(obj, true); if (hits.length > 0) isInspectionDragging = true; } } });
+    window.addEventListener('pointerup', (event) => { isInspectionDragging = false; initialPinchDistance = 0; if (!isExploded) return; if (isMultiTouch) return; if (isDragMove) return; scene.updateMatrixWorld(true); mouse.x = (event.clientX / window.innerWidth) * 2 - 1; mouse.y = -(event.clientY / window.innerHeight) * 2 + 1; raycaster.setFromCamera(mouse, camera); const intersects = raycaster.intersectObjects(floatingObjects, true); const roots = []; const seen = new Set(); for (const hit of intersects) { const root = findInteractiveRoot(hit.object); if (root && !seen.has(root.uuid)) { seen.add(root.uuid); roots.push(root); } } if (roots.length === 0) { if (activeUUID) { const currentObj = floatingObjects.find(o => o.uuid === activeUUID); if (currentObj && currentObj.userData.isTreeTop) return; unpinCurrent(); } return; } let chosen = roots.find(r => r.userData.pickType === 'gift'); if (!chosen) chosen = roots[0]; if (activeUUID === chosen.uuid) return; pinObject(chosen); });
+    window.addEventListener('wheel', (event) => { handleZoom(event.deltaY); }, { passive: false });
+    function getPinchDistance(event) { const dx = event.touches[0].pageX - event.touches[1].pageX; const dy = event.touches[0].pageY - event.touches[1].pageY; return Math.sqrt(dx * dx + dy * dy); }
+    function handleZoom(deltaY) { if (!activeUUID) return; const obj = floatingObjects.find(o => o.uuid === activeUUID); if (!obj || (!obj.userData.isTreeTop && obj.userData.pickType !== 'photo')) return; const scaleSensitivity = 0.001; obj.userData.currentInspectionScale += deltaY * -scaleSensitivity; const minScale = 0.5; const maxScale = obj.userData.isTreeTop ? 6.0 : 4.0; obj.userData.currentInspectionScale = clamp(obj.userData.currentInspectionScale, minScale, maxScale); }
+    function unpinCurrent() { if (!activeUUID) return; const prev = floatingObjects.find(o => o.uuid === activeUUID); if (prev) { prev.userData.pinned = false; prev.userData.pinnedDist = null; if (prev.userData.isTreeTop || prev.userData.pickType === 'photo') prev.userData.currentInspectionScale = prev.userData.inspectionBaseScale; } activeUUID = null; isInspectionDragging = false; controls.enabled = true; controls.autoRotate = false; }
+    function triggerExplosionOrReset() { if (activeUUID) { unpinCurrent(); return; } isExploded = !isExploded; isCameraMoving = true; controls.enabled = false; if (isExploded) targetCameraPos.copy(camera.userData.orbitPos); else targetCameraPos.copy(camera.userData.treePos); if (!isExploded) { const top = floatingObjects.find(o => o.userData && o.userData.isTreeTop); if (top) top.userData.treeFacingSet = false; } }
+    function pinObject(root) { unpinCurrent(); activeUUID = root.uuid; root.userData.pinned = true; scene.updateMatrixWorld(true); const r = getWorldRadius(root); const baseDist = isMobile ? 70 : 60; const dist = clamp(Math.max(baseDist, computeSafeDistance(r)), 10, camera.far - 80); root.userData.pinnedDist = dist; if (root.userData.isTreeTop) { const focusPos = getFocusPosByDistance(dist); root.userData.inspectionPos.copy(focusPos); root.userData.currentInspectionScale = root.userData.inspectionBaseScale; controls.enabled = false; } else { if (root.userData.pickType === 'gift' || root.type === 'Group') faceCameraUprightY(root); else if (root.userData.pickType === 'photo') { root.lookAt(camera.position); root.userData.currentInspectionScale = root.userData.inspectionBaseScale; } else root.lookAt(camera.position); root.userData.pinnedRot.copy(root.rotation); controls.enabled = false; } }
+    window.addEventListener('dblclick', () => { triggerExplosionOrReset(); });
+    window.addEventListener('touchend', (event) => { if (event.touches.length === 0) setTimeout(() => { isMultiTouch = false; }, 100); const currentTime = new Date().getTime(); const tapLength = currentTime - lastTapTime; if (tapLength < 300 && tapLength > 0) { if (event.changedTouches.length === 1 && !isDragMove) { triggerExplosionOrReset(); event.preventDefault(); } } lastTapTime = currentTime; });
+
+    function updateCameraPosition() { const aspect = window.innerWidth / window.innerHeight; if (aspect < 1) { camera.userData.treePos = new THREE.Vector3(0, 5, 110); camera.userData.orbitPos = new THREE.Vector3(0, 30, 280); } else { camera.userData.treePos = new THREE.Vector3(0, 5, 80); camera.userData.orbitPos = new THREE.Vector3(0, 40, 280); } if (!camera.userData.isInitialized) { camera.position.copy(camera.userData.treePos); camera.userData.isInitialized = true; } }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      updateFireworks();
+      const time = Date.now();
+      lightBulbs.forEach(bulb => { const t = time * 0.005; const sparkle = Math.sin(t * 10 + bulb.userData.blinkOffset) * 0.5 + Math.sin(t * 25 + bulb.userData.blinkOffset * 2) * 0.3; bulb.material.emissiveIntensity = 2.5 + sparkle * 1.5; });
+      if (isCameraMoving) { camera.position.lerp(targetCameraPos, 0.03); camera.lookAt(0, 5, 0); if (camera.position.distanceTo(targetCameraPos) < 1.0) { isCameraMoving = false; controls.enabled = true; controls.update(); } } else { controls.update(); }
+      if (!isExploded) { starMesh.rotation.y += 0.0003; starMesh.rotation.x += 0.0001; }
+      const lerpSpeed = 0.02;
+      floatingObjects.forEach(obj => { if (obj.userData.pinned && obj.uuid === activeUUID) { if (obj.userData.isTreeTop) { alignLocalCenterToWorldPoint(obj, obj.userData.localCenter, obj.userData.inspectionPos); let bigScale = obj.userData.originScale.clone().multiplyScalar(obj.userData.currentInspectionScale); obj.scale.lerp(bigScale, 0.12); return; } const dist = obj.userData.pinnedDist || (isMobile ? 70 : 60); const focusPos = getFocusPosByDistance(dist); if (obj.userData.pickType === 'photo') obj.lookAt(camera.position); else obj.rotation.copy(obj.userData.pinnedRot); alignLocalCenterToWorldPoint(obj, obj.userData.localCenter, focusPos); let bigScale; if (obj.type === 'Group') bigScale = obj.userData.originScale.clone().multiplyScalar(1.5); else if (obj.geometry && obj.geometry.type === 'PlaneGeometry') bigScale = obj.userData.explodedScale.clone().multiplyScalar(obj.userData.currentInspectionScale); else bigScale = obj.userData.originScale.clone().multiplyScalar(2.0); obj.scale.lerp(bigScale, 0.12); return; } if (!isExploded && obj.userData.isTreeTop) { const topPoint = getTreeTopWorldPoint(tmpV3c); topPoint.y -= 1.5; snapBottomCenterToWorldPoint(obj, topPoint); if (!obj.userData.treeFacingSet) { obj.rotation.x = 0; obj.rotation.z = 0; obj.rotation.y = (obj.userData.yawOffset || 0); obj.userData.treeFacingSet = true; } obj.scale.lerp(obj.userData.originScale, 0.08); return; } let targetScale; if (isExploded) targetScale = obj.userData.isExplodedVisible ? obj.userData.explodedScale : new THREE.Vector3(0.001, 0.001, 0.001); else targetScale = obj.userData.originScale; obj.scale.lerp(targetScale, lerpSpeed); if (isExploded) { obj.userData.orbitAngle -= obj.userData.orbitSpeed; const targetX = Math.cos(obj.userData.orbitAngle) * obj.userData.orbitRadius; const targetZ = Math.sin(obj.userData.orbitAngle) * obj.userData.orbitRadius; const orbitalPos = new THREE.Vector3(targetX, obj.userData.orbitY, targetZ); obj.position.lerp(orbitalPos, lerpSpeed); obj.rotation.x += obj.userData.floatSpeed.x; obj.rotation.y += obj.userData.floatSpeed.y; } else { obj.position.lerp(obj.userData.originPos, lerpSpeed); obj.quaternion.slerp(new THREE.Quaternion().setFromEuler(obj.userData.originRot), lerpSpeed); } });
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); updateCameraPosition(); });
+    updateCameraPosition();
+    animate();
+
+    if (isMobile) {
+        log("检测到手机\n3秒后启动AI (Unpkg源)...");
+        setTimeout(() => { initMediaPipe(); }, 3000);
+    } else {
+        log("电脑端仅供预览\n手势功能请用手机访问");
+    }
+  </script>
+</body>
+</html>
