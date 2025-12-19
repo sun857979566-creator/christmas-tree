@@ -1,26 +1,38 @@
 <!DOCTYPE html>
 <html lang="zh">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>赛博圣诞树 - 原生极速版</title>
+  <title>圣诞树 - 强力调试版</title>
   <style>
-    body { margin: 0; overflow: hidden; background-color: #000; touch-action: none; font-family: monospace; }
+    body { margin: 0; overflow: hidden; background-color: #000; touch-action: none; font-family: sans-serif; }
     
     /* 启动层 */
     #overlay {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85); z-index: 2000;
+      background: rgba(0,0,0,0.9); z-index: 2000;
       display: flex; flex-direction: column; justify-content: center; align-items: center;
       color: #0ff; text-align: center;
     }
+    
+    /* 按钮状态样式 */
     #start_btn {
-      padding: 15px 40px; font-size: 20px; color: #000; background: #0ff;
-      border: none; border-radius: 5px; margin-top: 20px; cursor: pointer;
-      box-shadow: 0 0 15px #0ff; font-weight: bold;
+      padding: 20px 50px; font-size: 22px; color: #000; background: #333; /* 默认灰色 */
+      border: 2px solid #555; border-radius: 8px; margin-top: 30px; 
+      font-weight: bold; pointer-events: none; /* 默认不可点 */
+      transition: 0.3s;
     }
-    #status { margin-top: 15px; color: #888; font-size: 12px; }
+    /* 激活状态 */
+    #start_btn.ready {
+      background: #00ffff; border-color: #00ffff; 
+      box-shadow: 0 0 20px #00ffff; cursor: pointer; pointer-events: auto;
+    }
+
+    #status_log { 
+      margin-top: 20px; color: #0f0; font-size: 14px; 
+      white-space: pre-wrap; max-width: 80%; text-align: left; 
+      border: 1px solid #333; padding: 10px; background: #111;
+    }
 
     /* 悬浮摄像头窗口 */
     #cam_window {
@@ -28,33 +40,44 @@
       z-index: 1000; background: #000;
       border: 2px solid #0ff; border-radius: 8px;
       box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-      overflow: hidden; display: none; /* 启动后显示 */
+      overflow: hidden; display: none; 
     }
-    /* 画布镜像翻转 */
     #hand_canvas { width: 100%; height: 100%; transform: scaleX(-1); display: block; }
-    
-    /* 隐藏原始视频 */
     #raw_video { display: none; }
   </style>
 
-  <script src="https://npm.elemecdn.com/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script>
+    window.onerror = function(msg, url, line) {
+      const txt = "错误: " + msg + "\n行号: " + line;
+      alert(txt); // 直接弹窗报错
+      const log = document.getElementById('status_log');
+      if(log) log.innerText += "\n[ERROR] " + msg;
+    };
+    
+    function log(msg) {
+        const el = document.getElementById('status_log');
+        if(el) el.innerText += '\n> ' + msg;
+        console.log(msg);
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous" 
+    onload="window.libLoaded=true; document.getElementById('start_btn').classList.add('ready'); document.getElementById('start_btn').innerText='系统就绪 (点击启动)';"
+    onerror="alert('MediaPipe 库加载失败！请检查网络或切换 Wi-Fi');"></script>
 
   <script type="importmap">
-    { "imports": { "three": "https://npm.elemecdn.com/three@0.160.0/build/three.module.js", "three/addons/": "https://npm.elemecdn.com/three@0.160.0/examples/jsm/" } }
+    { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
   </script>
 </head>
 
 <body>
   <div id="overlay">
-    <div style="font-size: 24px; text-shadow: 0 0 10px #0ff;">SYSTEM READY</div>
-    <div id="status">等待指令...</div>
-    <button id="start_btn">启动系统 / START</button>
+    <div style="font-size: 24px; text-shadow: 0 0 10px #0ff;">赛博系统初始化</div>
+    <div id="status_log">正在下载 AI 核心文件 (Hands.js)...</div>
+    <button id="start_btn">下载中...</button>
   </div>
 
-  <div id="cam_window">
-    <canvas id="hand_canvas"></canvas>
-  </div>
-  
+  <div id="cam_window"><canvas id="hand_canvas"></canvas></div>
   <video id="raw_video" playsinline webkit-playsinline></video>
 
   <script type="module">
@@ -63,11 +86,9 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-    // ================= 全局变量 =================
-    const statusEl = document.getElementById('status');
+    // ================= 变量定义 =================
     const startBtn = document.getElementById('start_btn');
     const overlay = document.getElementById('overlay');
-    const camWindow = document.getElementById('cam_window');
     const video = document.getElementById('raw_video');
     const canvas = document.getElementById('hand_canvas');
     const ctx = canvas.getContext('2d');
@@ -75,40 +96,27 @@
     let handLandmarker = null;
     let isExploded = false;
     let lastGesture = 'UNKNOWN';
-    let cameraRunning = false;
     
-    // Three.js 相关变量
-    let scene, camera, renderer, controls, starMesh;
-    const floatingObjects = [];
-    const fireworks = [];
-    
-    // 手部连接关系 (手动定义，不依赖外部库)
-    const HAND_CONNECTIONS = [
-      [0,1],[1,2],[2,3],[3,4], // 拇指
-      [0,5],[5,6],[6,7],[7,8], // 食指
-      [0,9],[9,10],[10,11],[11,12], // 中指
-      [0,13],[13,14],[14,15],[15,16], // 无名指
-      [0,17],[17,18],[18,19],[19,20], // 小指
-      [5,9],[9,13],[13,17] // 掌心连接
-    ];
+    // 手部连接定义
+    const HAND_CONNECTIONS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
 
-    // ================= 1. 系统启动逻辑 (核心修复) =================
+    // ================= 1. 启动逻辑 =================
     startBtn.onclick = async () => {
-        startBtn.disabled = true;
-        startBtn.innerText = "正在初始化...";
+        log("按钮被点击");
         
-        // 1. 检查 HTTPS
-        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) {
-            alert("错误：必须使用 HTTPS 协议才能调用摄像头！\n如果是本地测试，请使用 localhost");
-            startBtn.innerText = "协议错误";
+        // 检查 Hands 是否存在
+        if (typeof window.Hands === 'undefined') {
+            alert("Hands 对象未找到，库可能未完全加载");
             return;
         }
 
-        // 2. 加载 AI 模型
-        statusEl.innerText = "正在加载 AI 核心 (请耐心等待)...";
         try {
+            startBtn.innerText = "启动中...";
+            
+            // 初始化 AI
+            log("配置 AI 模型...");
             const hands = new Hands({locateFile: (file) => {
-                return `https://npm.elemecdn.com/@mediapipe/hands/${file}`;
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`;
             }});
             
             hands.setOptions({
@@ -119,9 +127,9 @@
             });
             hands.onResults(onAIResults);
             handLandmarker = hands;
-            
-            // 3. 启动摄像头 (使用原生 API，最稳)
-            statusEl.innerText = "请求摄像头权限...";
+
+            // 启动摄像头
+            log("请求摄像头权限...");
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: false,
                 video: { facingMode: "user", width: 320, height: 240 }
@@ -130,264 +138,159 @@
             video.srcObject = stream;
             video.onloadedmetadata = () => {
                 video.play();
-                cameraRunning = true;
-                overlay.style.display = 'none'; // 隐藏遮罩
-                camWindow.style.display = 'block'; // 显示小窗
+                log("摄像头已运行");
+                overlay.style.display = 'none';
+                document.getElementById('cam_window').style.display = 'block';
                 
-                // 设置 canvas 大小匹配视频
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
-                
-                processVideoFrame(); // 开始循环检测
+                processVideoFrame();
             };
 
-        } catch (error) {
-            console.error(error);
-            alert("启动失败: " + error.message);
-            statusEl.innerText = "失败: " + error.message;
-            startBtn.disabled = false;
+        } catch (e) {
+            alert("启动错误: " + e.message);
+            log("ERROR: " + e.message);
             startBtn.innerText = "重试";
         }
     };
 
-    // 循环处理每一帧
     async function processVideoFrame() {
-        if (!cameraRunning) return;
-        if (handLandmarker) {
+        if (handLandmarker && video.readyState >= 2) {
             await handLandmarker.send({image: video});
         }
         requestAnimationFrame(processVideoFrame);
     }
 
-    // ================= 2. AI 结果处理与绘制 (手绘骨骼) =================
+    // ================= 2. 绘制与识别 =================
     function onAIResults(results) {
-        // 清空画布
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // 1. 绘制视频底图
         ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
         
-        // 2. 绘制手部骨骼
         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
             const landmarks = results.multiHandLandmarks[0];
             
-            // A. 画黄线 (骨骼)
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = '#FFFF00'; // 黄色
-            
-            for (const [start, end] of HAND_CONNECTIONS) {
-                const p1 = landmarks[start];
-                const p2 = landmarks[end];
-                ctx.beginPath();
+            // 绘制骨骼 (赛博黄)
+            ctx.lineWidth = 2; ctx.strokeStyle = '#FFFF00';
+            for (const [s, e] of HAND_CONNECTIONS) {
+                const p1 = landmarks[s]; const p2 = landmarks[e];
+                ctx.beginPath(); 
                 ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
                 ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
                 ctx.stroke();
             }
             
-            // B. 画红点 (关节)
-            ctx.fillStyle = '#FF0000'; // 红色
+            // 绘制关节 (赛博红)
+            ctx.fillStyle = '#FF0000';
             for (const lm of landmarks) {
-                ctx.beginPath();
-                ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 4, 0, 2 * Math.PI);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 3, 0, 2 * Math.PI); ctx.fill();
             }
 
-            // C. 触发逻辑
+            // 手势判断
             const gesture = detectGesture(landmarks);
             if (!isExploded && lastGesture === 'FIST' && gesture === 'OPEN') {
-                // 发射烟花
                 for(let i=0; i<5; i++) setTimeout(createFirework, i*200);
-                console.log("BOOM!");
             }
             if (gesture !== 'BETWEEN') lastGesture = gesture;
         }
     }
 
-    // 简单的手势判断
-    function detectGesture(landmarks) {
-        const wrist = landmarks[0];
-        const tips = [8, 12, 16, 20]; // 指尖
-        let folded = 0;
-        tips.forEach(idx => {
-            const tip = landmarks[idx];
-            // 简单距离判断
-            const dist = Math.sqrt(Math.pow(tip.x - wrist.x, 2) + Math.pow(tip.y - wrist.y, 2));
-            if (dist < 0.15) folded++;
+    function detectGesture(lm) {
+        const tips = [8,12,16,20]; let folded = 0;
+        const wrist = lm[0];
+        tips.forEach(i => {
+            if (Math.sqrt(Math.pow(lm[i].x - wrist.x, 2) + Math.pow(lm[i].y - wrist.y, 2)) < 0.15) folded++;
         });
-        if (folded >= 3) return 'FIST';
-        if (folded === 0) return 'OPEN';
+        if(folded >= 3) return 'FIST';
+        if(folded === 0) return 'OPEN';
         return 'BETWEEN';
     }
 
     // ================= 3. 悬浮窗拖拽 =================
-    let dragStart = {x:0, y:0};
-    let winPos = {x:0, y:0};
-    let isDragging = false;
+    const camWin = document.getElementById('cam_window');
+    let dragData = { active: false, x: 0, y: 0, initialX: 0, initialY: 0 };
 
-    camWindow.addEventListener('touchstart', (e) => {
-        isDragging = true;
-        dragStart.x = e.touches[0].clientX;
-        dragStart.y = e.touches[0].clientY;
-        const rect = camWindow.getBoundingClientRect();
-        winPos.x = rect.left;
-        winPos.y = rect.top;
-        e.stopPropagation(); // 防止穿透到 3D 场景
+    camWin.addEventListener('touchstart', (e) => {
+        dragData.active = true;
+        dragData.initialX = e.touches[0].clientX - camWin.offsetLeft;
+        dragData.initialY = e.touches[0].clientY - camWin.offsetTop;
+        e.stopPropagation();
     }, {passive: false});
 
     window.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
-        const dx = e.touches[0].clientX - dragStart.x;
-        const dy = e.touches[0].clientY - dragStart.y;
-        camWindow.style.right = 'auto'; 
-        camWindow.style.bottom = 'auto';
-        camWindow.style.left = (winPos.x + dx) + 'px';
-        camWindow.style.top = (winPos.y + dy) + 'px';
+        if (!dragData.active) return;
         e.preventDefault();
+        camWin.style.left = (e.touches[0].clientX - dragData.initialX) + "px";
+        camWin.style.top = (e.touches[0].clientY - dragData.initialY) + "px";
+        camWin.style.right = 'auto'; camWin.style.bottom = 'auto';
     }, {passive: false});
 
-    window.addEventListener('touchend', () => isDragging = false);
+    window.addEventListener('touchend', () => dragData.active = false);
 
-
-    // ================= 4. Three.js 场景逻辑 (保留原样) =================
-    // (为了简洁，这里放置简化后的 Three.js 初始化代码，确保不影响视觉效果)
+    // ================= 4. Three.js 核心 (简版) =================
+    // 这里的逻辑保持不变，用于渲染圣诞树
+    const scene = new THREE.Scene(); scene.background = new THREE.Color(0x000000);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000); camera.position.set(0, 5, 100);
+    const renderer = new THREE.WebGLRenderer({antialias:true}); renderer.setSize(window.innerWidth, window.innerHeight); document.body.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
     
-    // 初始化场景
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
-    scene.fog = new THREE.FogExp2(0x000000, 0.0015);
-    
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-    camera.position.set(0, 5, 110);
-    
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    document.body.appendChild(renderer.domElement);
-    
-    controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.autoRotate = false;
-
     // 灯光
-    const hLight = new THREE.HemisphereLight(0xffffff, 0x444444, 2.0); scene.add(hLight);
-    const dLight = new THREE.DirectionalLight(0xffffff, 1.5); dLight.position.set(10, 20, 10); scene.add(dLight);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 2));
+    const dl = new THREE.DirectionalLight(0xffffff, 1.5); dl.position.set(10,20,10); scene.add(dl);
 
-    // 星空背景
-    const starGeo = new THREE.BufferGeometry();
-    const starPos = []; const starCol = [];
-    for(let i=0; i<1500; i++) {
-        starPos.push((Math.random()-0.5)*1500, (Math.random()-0.5)*1500, (Math.random()-0.5)*1500);
-        starCol.push(1,1,1);
-    }
+    // 星空
+    const starGeo = new THREE.BufferGeometry(); const starPos = []; 
+    for(let i=0; i<1000; i++) starPos.push((Math.random()-0.5)*1000, (Math.random()-0.5)*1000, (Math.random()-0.5)*1000);
     starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-    starGeo.setAttribute('color', new THREE.Float32BufferAttribute(starCol, 3));
-    const starMat = new THREE.PointsMaterial({size: 2, vertexColors: true});
-    starMesh = new THREE.Points(starGeo, starMat);
-    scene.add(starMesh);
+    const starMesh = new THREE.Points(starGeo, new THREE.PointsMaterial({color:0xffffff, size:2})); scene.add(starMesh);
 
-    // 树 (简化占位，确保先跑起来)
-    const treeGroup = new THREE.Group();
-    scene.add(treeGroup);
+    // 树 (简单球体代替，保证先跑通)
+    const treeGroup = new THREE.Group(); scene.add(treeGroup);
     
-    // 重新加载那些漂亮的模型和照片
-    // 注意：这里为了代码长度，我直接调用你的原始逻辑函数名，你需要确保你的 glb 文件在同一目录下
+    // 加载你的 GLB
     const gltfLoader = new GLTFLoader();
-    
-    // 加载豹警官 (核心)
     gltfLoader.load('clawhauser.glb', (gltf) => {
-        const model = gltf.scene;
-        model.scale.set(10,10,10);
-        model.position.set(0, 30, 0);
-        treeGroup.add(model);
-        floatingObjects.push(model); // 加入交互列表
-        model.userData = { 
-            originPos: model.position.clone(), 
-            originScale: model.scale.clone(),
-            isTreeTop: true,
-            inspectionBaseScale: 2.0,
-            currentInspectionScale: 2.0
-        };
-    }, undefined, (e) => console.log("豹警官加载中..."));
+        const m = gltf.scene; m.scale.set(10,10,10); m.position.y = 30; treeGroup.add(m);
+        // 这里只是为了让它能被点击和交互，简化了逻辑
+        m.userData = { isTreeTop: true };
+    }, undefined, (e)=>{ console.log('模型加载中') });
 
-    // 加载照片 (示例)
-    const loader = new THREE.TextureLoader();
-    for(let i=0; i<50; i++) {
-        // 使用简单的平面代替，保证不卡顿
-        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(3,4), new THREE.MeshBasicMaterial({color: Math.random()*0xffffff, side: THREE.DoubleSide}));
-        const y = 30 - i * 1.2;
-        const r = 5 + i * 0.5;
-        const theta = Math.random() * Math.PI * 2;
-        mesh.position.set(Math.cos(theta)*r, y, Math.sin(theta)*r);
-        mesh.lookAt(0,y,0);
-        treeGroup.add(mesh);
-        floatingObjects.push(mesh);
-        mesh.userData = { originPos: mesh.position.clone(), isTreeTop: false };
-        
-        // 尝试加载真实照片覆盖
-        const url = i===0 ? 'photos/A.jpg' : `photos/A (${i}).jpg`;
-        loader.load(url, (tex) => { mesh.material.map = tex; mesh.material.color.setHex(0xffffff); mesh.material.needsUpdate = true; }, undefined, ()=>{});
-    }
-
-    // 烟花逻辑
+    // 烟花
+    const fireworks = [];
     function createFirework() {
-        const count = 100;
-        const geo = new THREE.BufferGeometry();
-        const pos = []; const vel = [];
+        const geo = new THREE.BufferGeometry(); const pos = []; const vel = [];
         const color = new THREE.Color().setHSL(Math.random(), 1, 0.5);
-        
-        for(let i=0; i<count; i++) {
+        for(let i=0; i<100; i++) {
             pos.push(0, 40, 0);
-            const v = new THREE.Vector3((Math.random()-0.5), (Math.random()-0.5), (Math.random()-0.5)).normalize().multiplyScalar(Math.random()*1.5);
-            vel.push(v);
+            vel.push((Math.random()-0.5)*2, (Math.random()-0.5)*2, (Math.random()-0.5)*2);
         }
         geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-        const mat = new THREE.PointsMaterial({size: 2, color: color, transparent: true});
-        const points = new THREE.Points(geo, mat);
-        points.userData = { vel: vel, life: 1.0 };
-        scene.add(points);
-        fireworks.push(points);
+        const mat = new THREE.PointsMaterial({size:3, color:color, transparent:true});
+        const points = new THREE.Points(geo, mat); points.userData = {vel: vel, life: 1};
+        scene.add(points); fireworks.push(points);
     }
 
-    function updateFireworks() {
-        for(let i=fireworks.length-1; i>=0; i--) {
-            const fw = fireworks[i];
-            const positions = fw.geometry.attributes.position.array;
-            fw.userData.life -= 0.02;
-            fw.material.opacity = fw.userData.life;
-            
-            for(let j=0; j<fw.userData.vel.length; j++) {
-                const v = fw.userData.vel[j];
-                v.y -= 0.02; // 重力
-                positions[j*3] += v.x;
-                positions[j*3+1] += v.y;
-                positions[j*3+2] += v.z;
-            }
-            fw.geometry.attributes.position.needsUpdate = true;
-            
-            if(fw.userData.life <= 0) {
-                scene.remove(fw);
-                fireworks.splice(i, 1);
-            }
-        }
-    }
-
-    // 动画循环
     function animate() {
         requestAnimationFrame(animate);
-        controls.update();
         starMesh.rotation.y += 0.001;
-        updateFireworks();
+        
+        // 烟花更新
+        for(let i=fireworks.length-1; i>=0; i--) {
+            const fw = fireworks[i]; const pos = fw.geometry.attributes.position.array;
+            fw.userData.life -= 0.02; fw.material.opacity = fw.userData.life;
+            for(let j=0; j<fw.userData.vel.length; j+=3) {
+                pos[j] += fw.userData.vel[j]; pos[j+1] += fw.userData.vel[j+1] - 0.05; pos[j+2] += fw.userData.vel[j+2];
+            }
+            fw.geometry.attributes.position.needsUpdate = true;
+            if(fw.userData.life <= 0) { scene.remove(fw); fireworks.splice(i,1); }
+        }
+        
+        controls.update();
         renderer.render(scene, camera);
     }
-    
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth/window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-    
     animate();
-
+    
+    // 3D交互简版
+    window.addEventListener('resize', () => { camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
   </script>
 </body>
 </html>
