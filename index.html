@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>圣诞树 - 强力调试版</title>
+  <title>圣诞树 - 最终修复版</title>
   <style>
     body { margin: 0; overflow: hidden; background-color: #000; touch-action: none; font-family: sans-serif; }
     
@@ -17,14 +17,14 @@
     
     /* 按钮状态样式 */
     #start_btn {
-      padding: 20px 50px; font-size: 22px; color: #000; background: #333; /* 默认灰色 */
-      border: 2px solid #555; border-radius: 8px; margin-top: 30px; 
+      padding: 20px 50px; font-size: 22px; color: #888; background: #222; /* 默认灰色 */
+      border: 2px solid #444; border-radius: 8px; margin-top: 30px; 
       font-weight: bold; pointer-events: none; /* 默认不可点 */
       transition: 0.3s;
     }
     /* 激活状态 */
     #start_btn.ready {
-      background: #00ffff; border-color: #00ffff; 
+      background: #00ffff; border-color: #00ffff; color: #000;
       box-shadow: 0 0 20px #00ffff; cursor: pointer; pointer-events: auto;
     }
 
@@ -48,10 +48,9 @@
 
   <script>
     window.onerror = function(msg, url, line) {
-      const txt = "错误: " + msg + "\n行号: " + line;
-      alert(txt); // 直接弹窗报错
-      const log = document.getElementById('status_log');
-      if(log) log.innerText += "\n[ERROR] " + msg;
+      // 忽略 resizeObserver 报错
+      if (msg.includes('ResizeObserver')) return;
+      alert("错误: " + msg + "\n行号: " + line);
     };
     
     function log(msg) {
@@ -59,10 +58,32 @@
         if(el) el.innerText += '\n> ' + msg;
         console.log(msg);
     }
+
+    // 【核心修复】安全的按钮激活函数
+    window.activateBtn = function() {
+        // 尝试获取按钮
+        const btn = document.getElementById('start_btn');
+        if (btn) {
+            // 如果按钮存在，直接激活
+            btn.classList.add('ready');
+            btn.innerText = '系统就绪 (点击启动)';
+            window.libLoaded = true;
+        } else {
+            // 如果按钮还不存在（代码跑太快了），就等网页加载完再激活
+            window.addEventListener('DOMContentLoaded', function() {
+                const btnLate = document.getElementById('start_btn');
+                if(btnLate) {
+                    btnLate.classList.add('ready');
+                    btnLate.innerText = '系统就绪 (点击启动)';
+                    window.libLoaded = true;
+                }
+            });
+        }
+    }
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous" 
-    onload="window.libLoaded=true; document.getElementById('start_btn').classList.add('ready'); document.getElementById('start_btn').innerText='系统就绪 (点击启动)';"
+    onload="window.activateBtn()"
     onerror="alert('MediaPipe 库加载失败！请检查网络或切换 Wi-Fi');"></script>
 
   <script type="importmap">
@@ -73,7 +94,7 @@
 <body>
   <div id="overlay">
     <div style="font-size: 24px; text-shadow: 0 0 10px #0ff;">赛博系统初始化</div>
-    <div id="status_log">正在下载 AI 核心文件 (Hands.js)...</div>
+    <div id="status_log">正在下载 AI 核心文件...</div>
     <button id="start_btn">下载中...</button>
   </div>
 
@@ -106,7 +127,7 @@
         
         // 检查 Hands 是否存在
         if (typeof window.Hands === 'undefined') {
-            alert("Hands 对象未找到，库可能未完全加载");
+            alert("AI 库尚未完全加载，请稍等几秒...");
             return;
         }
 
@@ -227,32 +248,27 @@
     window.addEventListener('touchend', () => dragData.active = false);
 
     // ================= 4. Three.js 核心 (简版) =================
-    // 这里的逻辑保持不变，用于渲染圣诞树
     const scene = new THREE.Scene(); scene.background = new THREE.Color(0x000000);
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000); camera.position.set(0, 5, 100);
     const renderer = new THREE.WebGLRenderer({antialias:true}); renderer.setSize(window.innerWidth, window.innerHeight); document.body.appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
     
-    // 灯光
     scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 2));
     const dl = new THREE.DirectionalLight(0xffffff, 1.5); dl.position.set(10,20,10); scene.add(dl);
 
-    // 星空
     const starGeo = new THREE.BufferGeometry(); const starPos = []; 
     for(let i=0; i<1000; i++) starPos.push((Math.random()-0.5)*1000, (Math.random()-0.5)*1000, (Math.random()-0.5)*1000);
     starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
     const starMesh = new THREE.Points(starGeo, new THREE.PointsMaterial({color:0xffffff, size:2})); scene.add(starMesh);
 
-    // 树 (简单球体代替，保证先跑通)
     const treeGroup = new THREE.Group(); scene.add(treeGroup);
     
-    // 加载你的 GLB
+    // 加载 GLB (请确保目录下有 clawhauser.glb)
     const gltfLoader = new GLTFLoader();
     gltfLoader.load('clawhauser.glb', (gltf) => {
         const m = gltf.scene; m.scale.set(10,10,10); m.position.y = 30; treeGroup.add(m);
-        // 这里只是为了让它能被点击和交互，简化了逻辑
         m.userData = { isTreeTop: true };
-    }, undefined, (e)=>{ console.log('模型加载中') });
+    }, undefined, (e)=>{ console.log('模型加载中...') });
 
     // 烟花
     const fireworks = [];
@@ -273,7 +289,6 @@
         requestAnimationFrame(animate);
         starMesh.rotation.y += 0.001;
         
-        // 烟花更新
         for(let i=fireworks.length-1; i>=0; i--) {
             const fw = fireworks[i]; const pos = fw.geometry.attributes.position.array;
             fw.userData.life -= 0.02; fw.material.opacity = fw.userData.life;
@@ -289,7 +304,6 @@
     }
     animate();
     
-    // 3D交互简版
     window.addEventListener('resize', () => { camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
   </script>
 </body>
