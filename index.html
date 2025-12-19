@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>我的3D照片圣诞树 - 丝滑触控版</title>
+  <title>我的3D照片圣诞树 - 手势烟花版</title>
   <style>
     body {
       margin: 0;
@@ -12,9 +12,22 @@
       background-color: #000;
       user-select: none;
       -webkit-user-select: none;
-      touch-action: none; /* 禁止浏览器默认缩放和滚动 */
+      touch-action: none;
+    }
+    /* 摄像头视频隐藏，只用于分析 */
+    #input_video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      display: none; 
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
   <script type="importmap">
     {
@@ -27,6 +40,8 @@
 </head>
 
 <body>
+  <video id="input_video"></video>
+
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -102,11 +117,17 @@
     let initialScale = 0;
     let lastTapTime = 0;
 
-    // 【新增】防误触核心变量
+    // 防误触核心变量
     let touchStartTime = 0;
     let isMultiTouch = false;
     let isDragMove = false;
     const touchStartPos = new THREE.Vector2();
+
+    // 【新增】烟花和手势相关变量
+    let fireworks = [];
+    let handLandmarker = null;
+    let webcamRunning = false;
+    let lastGesture = 'UNKNOWN'; // 记录上一次的手势状态
 
     const tmpV3a = new THREE.Vector3();
     const tmpV3b = new THREE.Vector3();
@@ -239,7 +260,6 @@
     scene.add(starMesh);
 
     // ================= 5. 树 =================
-    // 【修改】强制使用高数量，无论手机还是电脑
     const TOTAL_LEAVES = 600; 
     const TREE_HEIGHT = 60;
     const TREE_RADIUS = 20;
@@ -329,7 +349,6 @@
     // B. 彩球
     const colors = [0xDC143C, 0xFFD700, 0x228B22, 0xE0E0E0];
     const baseSphereGeo = new THREE.SphereGeometry(0.3, 32, 32);
-    // 【修改】强制使用高数量
     const sphereCount = 450; 
     for (let i = 0; i < sphereCount; i++) {
       const sphere = new THREE.Mesh(baseSphereGeo, new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], metalness: 0.7, roughness: 0.35, envMapIntensity: 1.0 }));
@@ -406,7 +425,6 @@
       const lightStripGroup = new THREE.Group();
       const stripBottomY = -TREE_HEIGHT / 2 + 2; const stripTopY = TREE_HEIGHT / 2 - 5; const stripHeight = stripTopY - stripBottomY;
       const radiusBottom = TREE_RADIUS + 2; const radiusTop = 4; const turns = 6; 
-      // 【修改】强制使用高数量
       const lightCount = 250;
       
       const bulbGeo = new THREE.SphereGeometry(isMobile ? 0.1 : 0.15, 8, 8);
@@ -442,19 +460,176 @@
     }
     createLightStrip();
 
+    // ================= 【新增】烟花系统 =================
+    function createFirework() {
+        const particleCount = isMobile ? 100 : 200; // 手机上减少粒子数
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        const velocities = [];
+
+        // 随机选择一种烟花颜色
+        const fireworkColor = new THREE.Color();
+        fireworkColor.setHSL(Math.random(), 1.0, 0.5);
+
+        for (let i = 0; i < particleCount; i++) {
+            // 初始位置在树的上方中心
+            positions[i * 3] = 0;
+            positions[i * 3 + 1] = TREE_HEIGHT / 2 + 20;
+            positions[i * 3 + 2] = 0;
+
+            colors[i * 3] = fireworkColor.r;
+            colors[i * 3 + 1] = fireworkColor.g;
+            colors[i * 3 + 2] = fireworkColor.b;
+
+            // 随机爆炸速度方向
+            const velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 2,
+                (Math.random() - 0.5) * 2,
+                (Math.random() - 0.5) * 2
+            );
+            velocity.normalize().multiplyScalar(Math.random() * 2 + 1); // 爆炸力度
+            velocities.push(velocity);
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        // 使用圆形纹理让粒子看起来更好看
+        const particleMaterial = new THREE.PointsMaterial({
+            size: 1.5,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+            opacity: 1.0,
+            map: createGlowTexture(), // 复用星星的纹理
+            depthWrite: false
+        });
+
+        const particleSystem = new THREE.Points(geometry, particleMaterial);
+        particleSystem.userData.velocities = velocities;
+        particleSystem.userData.life = 1.0; // 生命周期
+
+        scene.add(particleSystem);
+        fireworks.push(particleSystem);
+    }
+
+    function updateFireworks() {
+        for (let i = fireworks.length - 1; i >= 0; i--) {
+            const firework = fireworks[i];
+            const positions = firework.geometry.attributes.position.array;
+            const velocities = firework.userData.velocities;
+
+            firework.userData.life -= 0.015; // 减少生命
+            firework.material.opacity = firework.userData.life;
+
+            for (let j = 0; j < velocities.length; j++) {
+                velocities[j].y -= 0.03; // 重力效果
+                positions[j * 3] += velocities[j].x;
+                positions[j * 3 + 1] += velocities[j].y;
+                positions[j * 3 + 2] += velocities[j].z;
+            }
+            firework.geometry.attributes.position.needsUpdate = true;
+
+            if (firework.userData.life <= 0) {
+                scene.remove(firework);
+                firework.geometry.dispose();
+                firework.material.dispose();
+                fireworks.splice(i, 1);
+            }
+        }
+    }
+
+    // ================= 【新增】MediaPipe 手势识别 =================
+    const videoElement = document.getElementById('input_video');
+
+    function onResults(results) {
+        if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+            lastGesture = 'UNKNOWN';
+            return;
+        }
+
+        // 只处理第一只识别到的手
+        const landmarks = results.multiHandLandmarks[0];
+        const currentGesture = detectGesture(landmarks);
+
+        // 核心逻辑：如果没炸开，且手势从握拳变成了张开，就放烟花
+        if (!isExploded && lastGesture === 'FIST' && currentGesture === 'OPEN') {
+            // 连续放几个烟花
+            for(let i=0; i<3; i++) {
+                setTimeout(() => createFirework(), i * 300);
+            }
+            console.log("Gesture triggered fireworks!");
+        }
+
+        if (currentGesture !== 'BETWEEN') {
+            lastGesture = currentGesture;
+        }
+    }
+
+    // 简单的手势检测：计算指尖到手腕的距离
+    function detectGesture(landmarks) {
+        const wrist = landmarks[0];
+        // 食指、中指、无名指、小指的指尖索引
+        const fingertips = [8, 12, 16, 20]; 
+        let foldedFingers = 0;
+
+        fingertips.forEach(idx => {
+            const tip = landmarks[idx];
+            // 计算简单的欧几里得距离 (使用 x, y 坐标，忽略 z 以简化)
+            const dist = Math.sqrt(Math.pow(tip.x - wrist.x, 2) + Math.pow(tip.y - wrist.y, 2));
+            // 阈值需要根据实际情况调整，这里 0.15 是一个经验值
+            if (dist < 0.15) foldedFingers++;
+        });
+
+        // 如果3个或以上手指弯曲，认为是拳头
+        if (foldedFingers >= 3) return 'FIST';
+        // 如果没有手指弯曲，认为是张开
+        if (foldedFingers === 0) return 'OPEN';
+        // 中间状态
+        return 'BETWEEN';
+    }
+
+    async function initMediaPipe() {
+        console.log("Initializing MediaPipe...");
+        const hands = new Hands({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+        }});
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1, // 0性能最好, 1平衡, 2精度最高。手机选1或0
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+        hands.onResults(onResults);
+
+        try {
+            const camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    await hands.send({image: videoElement});
+                },
+                width: 320, // 降低分辨率以提高手机性能
+                height: 240,
+                facingMode: 'user' // 使用前置摄像头
+            });
+            await camera.start();
+            webcamRunning = true;
+            console.log("Camera started successfully.");
+        } catch (e) {
+            console.error("Failed to start camera:", e);
+            // alert("无法启动摄像头，手势功能不可用。请确保在 HTTPS 环境下并在手机浏览器中允许摄像头权限。");
+        }
+    }
+
     // ================= 6. 交互逻辑 =================
     
     // 【修改】新增：检测触摸开始
     window.addEventListener('touchstart', (event) => {
-        // 记录开始时间
         touchStartTime = Date.now();
-        // 记录第一根手指的位置
         touchStartPos.set(event.touches[0].clientX, event.touches[0].clientY);
         
-        // 如果是双指，标记为多指操作
         if (event.touches.length > 1) {
             isMultiTouch = true;
-            // 此时也是缩放的开始，记录初始距离
             if (activeUUID) {
                const obj = floatingObjects.find(o => o.uuid === activeUUID);
                if (obj && (obj.userData.isTreeTop || obj.userData.pickType === 'photo')) {
@@ -466,14 +641,13 @@
             isMultiTouch = false;
         }
         
-        isDragMove = false; // 重置拖拽标记
+        isDragMove = false; 
     }, { passive: false });
 
     // 【修改】检测触摸移动
     window.addEventListener('touchmove', (event) => {
-        // 如果是双指，执行缩放逻辑
         if (event.touches.length === 2) {
-            isMultiTouch = true; // 确保标记
+            isMultiTouch = true;
             if (activeUUID && initialPinchDistance > 0) {
                 const obj = floatingObjects.find(o => o.uuid === activeUUID);
                 if (obj && (obj.userData.isTreeTop || obj.userData.pickType === 'photo')) {
@@ -484,11 +658,10 @@
                     obj.userData.currentInspectionScale = clamp(initialScale * scaleFactor, minScale, maxScale);
                 }
             }
-            event.preventDefault(); // 阻止浏览器默认缩放
+            event.preventDefault();
             return;
         }
 
-        // 如果是单指，检测移动距离是否超过阈值（防误触）
         const dx = event.touches[0].clientX - touchStartPos.x;
         const dy = event.touches[0].clientY - touchStartPos.y;
         if (Math.sqrt(dx * dx + dy * dy) > 10) {
@@ -498,7 +671,6 @@
 
     // 鼠标/单指拖动控制 (用于旋转豹警官)
     window.addEventListener('pointermove', (event) => {
-      // 只有在显式拖拽豹警官时才生效
       if (!isInspectionDragging || !activeUUID) return;
       const obj = floatingObjects.find(o => o.uuid === activeUUID);
       if (!obj || !obj.userData.isTreeTop) return;
@@ -513,12 +685,8 @@
       previousMouse.set(event.clientX, event.clientY);
     });
 
-    // 【修改】pointerdown 只负责记录鼠标位置和检测是否点击了豹警官准备拖拽
     window.addEventListener('pointerdown', (event) => {
-        // 记录鼠标位置供 pointermove 计算 delta
         previousMouse.set(event.clientX, event.clientY);
-
-        // 检测是否点击了豹警官 (为了旋转)
         if (activeUUID) {
             const obj = floatingObjects.find(o => o.uuid === activeUUID);
             if (obj && obj.userData.isTreeTop) {
@@ -538,7 +706,6 @@
       initialPinchDistance = 0; 
     });
 
-    // 滚轮缩放
     window.addEventListener('wheel', (event) => {
       handleZoom(event.deltaY);
     }, { passive: false });
@@ -623,21 +790,11 @@
       }
     }
 
-    // 【重要修改】使用 pointerup (或 touchend) 来触发点击逻辑，解决冲突
     window.addEventListener('pointerup', (event) => {
-        // 如果不是在炸开状态，不处理
         if (!isExploded) return;
-        
-        // 1. 如果是多指操作（缩放中），不触发点击
         if (isMultiTouch) return;
-
-        // 2. 如果发生了明显的拖动（旋转或滑动），不触发点击
-        // 对于 pointer 设备，pointermove 已经处理了 isInspectionDragging 的逻辑
-        // 这里主要通过 touch 逻辑里的 isDragMove 配合判断
-        // 注意：pointerup 也会在鼠标点击时触发
         if (isDragMove) return; 
 
-        // 3. 执行射线检测
         scene.updateMatrixWorld(true);
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -649,24 +806,19 @@
             if (root && !seen.has(root.uuid)) { seen.add(root.uuid); roots.push(root); }
         }
 
-        // 4. 点击背景
         if (roots.length === 0) {
-            // 如果没点到东西，且当前有选中物
             if (activeUUID) {
                 const currentObj = floatingObjects.find(o => o.uuid === activeUUID);
-                // 豹警官不退出 (为了防止旋转时不小心点到外面)
                 if (currentObj && currentObj.userData.isTreeTop) return; 
-                // 其他物体直接退出
                 unpinCurrent(); 
             }
             return;
         }
 
-        // 5. 点到了物体
         let chosen = roots.find(r => r.userData.pickType === 'gift');
         if (!chosen) chosen = roots[0];
 
-        if (activeUUID === chosen.uuid) return; // 点到自己
+        if (activeUUID === chosen.uuid) return;
 
         pinObject(chosen);
     });
@@ -676,15 +828,13 @@
     });
 
     window.addEventListener('touchend', (event) => {
-        // 重置多指状态 (如果是最后一根手指离开)
         if (event.touches.length === 0) {
-            setTimeout(() => { isMultiTouch = false; }, 100); // 延迟一点重置，防止 pointerup 误判
+            setTimeout(() => { isMultiTouch = false; }, 100);
         }
 
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTapTime;
         if (tapLength < 300 && tapLength > 0) {
-            // 检测到双击，且不是双指操作，且没有大幅移动
             if (event.changedTouches.length === 1 && !isDragMove) {
                 triggerExplosionOrReset();
                 event.preventDefault(); 
@@ -702,6 +852,9 @@
 
     function animate() {
       requestAnimationFrame(animate);
+
+      // 【新增】更新烟花
+      updateFireworks();
       
       const time = Date.now();
       lightBulbs.forEach(bulb => {
@@ -785,6 +938,15 @@
     });
     updateCameraPosition();
     animate();
+
+    // 【新增】如果是手机端，尝试启动摄像头和手势识别
+    if (isMobile) {
+        // 延迟一点启动，避免和 Three.js 初始化冲突太厉害
+        setTimeout(() => {
+            initMediaPipe();
+        }, 2000);
+    }
+
   </script>
 </body>
 </html>
