@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>圣诞树 - 赛博手势版</title>
+  <title>圣诞树 - 赛博终极版</title>
   <style>
     body {
       margin: 0;
@@ -13,8 +13,45 @@
       user-select: none;
       -webkit-user-select: none;
       touch-action: none;
+      font-family: 'Arial', sans-serif;
     }
     
+    /* 启动按钮样式 */
+    #start_overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 2000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    #start_btn {
+      padding: 15px 40px;
+      font-size: 24px;
+      color: #00ffff;
+      background: rgba(0, 50, 50, 0.8);
+      border: 2px solid #00ffff;
+      border-radius: 8px;
+      box-shadow: 0 0 20px #00ffff;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: 0.3s;
+    }
+    #start_btn:active {
+      background: #00ffff;
+      color: #000;
+      box-shadow: 0 0 40px #00ffff;
+    }
+    #status_text {
+      color: #fff;
+      margin-top: 20px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
     /* 调试文字 */
     #debug_console {
       position: absolute;
@@ -31,61 +68,49 @@
       white-space: pre-wrap;
       border: 1px solid #00ff00;
       border-radius: 4px;
+      display: none; /* 默认隐藏，太乱了 */
     }
 
-    /* 摄像头悬浮窗容器 */
+    /* 悬浮窗 */
     #camera_container {
       position: absolute;
       bottom: 20px;
       right: 20px;
       width: 120px;
-      height: 160px; /* 4:3 比例 */
+      height: 160px;
       z-index: 1000;
-      /* 科技感边框 */
-      border: 2px solid rgba(0, 255, 255, 0.5);
+      border: 2px solid rgba(0, 255, 255, 0.6);
       border-radius: 10px;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.8);
       overflow: hidden;
-      box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-      /* 允许点击操作 */
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
       touch-action: none; 
+      display: none; /* 启动前隐藏 */
     }
 
-    /* 画布：用于显示视频和绘制骨骼 */
     #output_canvas {
       width: 100%;
       height: 100%;
-      transform: scaleX(-1); /* 镜像翻转，像照镜子 */
+      transform: scaleX(-1);
       display: block;
     }
 
-    /* 原始视频隐藏，只用于后台识别 */
-    #input_video {
-      display: none;
-    }
+    #input_video { display: none; }
   </style>
 
   <script>
-    window.logError = function(msg) {
-      const el = document.getElementById('debug_console');
-      if(el) el.innerText += '\n[错误] ' + msg;
-      console.error(msg);
-    }
-    window.logInfo = function(msg) {
-      const el = document.getElementById('debug_console');
-      if(el) el.innerText = msg;
-      console.log(msg);
-    }
-    window.appendLog = function(msg) {
-        const el = document.getElementById('debug_console');
-        if(el) el.innerText += '\n' + msg;
+    window.logError = function(msg) { console.error(msg); alert("错误: " + msg); }
+    window.logInfo = function(msg) { 
+        console.log(msg); 
+        const el = document.getElementById('status_text');
+        if(el) el.innerText = msg;
     }
   </script>
 
-  <script src="https://npm.elemecdn.com/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous" onerror="window.logError('camera_utils 加载失败')"></script>
-  <script src="https://npm.elemecdn.com/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous" onerror="window.logError('control_utils 加载失败')"></script>
-  <script src="https://npm.elemecdn.com/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous" onerror="window.logError('drawing_utils 加载失败')"></script>
-  <script src="https://npm.elemecdn.com/@mediapipe/hands/hands.js" crossorigin="anonymous" onerror="window.logError('hands.js 加载失败')"></script>
+  <script src="https://npm.elemecdn.com/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://npm.elemecdn.com/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://npm.elemecdn.com/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://npm.elemecdn.com/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
   <script type="importmap">
     {
@@ -98,7 +123,12 @@
 </head>
 
 <body>
-  <div id="debug_console">系统初始化中...</div>
+  <div id="start_overlay">
+      <button id="start_btn">启动系统</button>
+      <div id="status_text">等待指令...</div>
+  </div>
+
+  <div id="debug_console"></div>
   
   <div id="camera_container">
       <canvas id="output_canvas"></canvas>
@@ -111,7 +141,7 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-    // ================= 1. 核心布局数据 =================
+    // ================= 1. 场景设置 =================
     const FIXED_LAYOUT = [
       { "name": "giftbox4.glb", "pos": [10.33, -32, 59.09], "rot": 1.66 }, { "name": "giftbox1.glb", "pos": [21.06, -32, -2.97], "rot": 1.06 }, { "name": "giftbox3.glb", "pos": [10.07, -32, 39.08], "rot": 2.33 }, { "name": "giftbox3.glb", "pos": [6.9, -32, 63.75], "rot": 1.26 }, { "name": "giftbox2.glb", "pos": [23.1, -32, 48.07], "rot": 1.23 }, { "name": "giftbox1.glb", "pos": [18.68, -32, 0.85], "rot": 3.13 }, { "name": "giftbox4.glb", "pos": [1, -32, 13.04], "rot": 1.58 }, { "name": "giftbox1.glb", "pos": [-10.65, -32, -14.06], "rot": 0.05 }, { "name": "giftbox4.glb", "pos": [30.9, -32, 12.76], "rot": 1.51 }, { "name": "giftbox5.glb", "pos": [-16.37, -32, 66.98], "rot": 0.73 }, { "name": "giftbox2.glb", "pos": [-44.31, -32, 52.75], "rot": 0.14 }, { "name": "giftbox1.glb", "pos": [4.98, -32, 6.17], "rot": 1.06 }, { "name": "giftbox4.glb", "pos": [3.07, -32, 39.17], "rot": 0.33 }, { "name": "giftbox5.glb", "pos": [22.66, -32, 50.69], "rot": 2.3 }, { "name": "giftbox2.glb", "pos": [19.69, -32, -18.06], "rot": 2.8 }, { "name": "giftbox3.glb", "pos": [39.87, -32, 22.91], "rot": 1.87 }, { "name": "giftbox4.glb", "pos": [-25.88, -32, 43.69], "rot": 1.18 }, { "name": "giftbox2.glb", "pos": [33.85, -32, -3.28], "rot": 2.15 }, { "name": "giftbox2.glb", "pos": [18.23, -32, 22.29], "rot": 1.63 }
     ];
@@ -246,65 +276,42 @@
         const rect = cameraContainer.getBoundingClientRect();
         initialLeft = rect.left;
         initialTop = rect.top;
-        e.stopPropagation(); // 阻止事件传给 Three.js 场景
+        e.stopPropagation(); 
     }, { passive: false });
 
     cameraContainer.addEventListener('touchmove', (e) => {
         if (!isDraggingContainer) return;
-        e.preventDefault(); // 阻止页面滚动
+        e.preventDefault(); 
         const deltaX = e.touches[0].clientX - dragStartX;
         const deltaY = e.touches[0].clientY - dragStartY;
-        // 限制在屏幕范围内
         let newLeft = initialLeft + deltaX;
         let newTop = initialTop + deltaY;
-        
-        // 简单边界限制
         const maxLeft = window.innerWidth - cameraContainer.offsetWidth;
         const maxTop = window.innerHeight - cameraContainer.offsetHeight;
-        
         cameraContainer.style.left = `${Math.min(Math.max(0, newLeft), maxLeft)}px`;
         cameraContainer.style.top = `${Math.min(Math.max(0, newTop), maxTop)}px`;
-        // 清除 bottom/right 属性，因为我们现在用 top/left 控制
         cameraContainer.style.bottom = 'auto';
         cameraContainer.style.right = 'auto';
     }, { passive: false });
 
-    cameraContainer.addEventListener('touchend', () => {
-        isDraggingContainer = false;
-    });
-
+    cameraContainer.addEventListener('touchend', () => { isDraggingContainer = false; });
 
     // ================= MediaPipe 识别与绘制 =================
     function onResults(results) {
-        // 1. 绘制视频帧背景
         canvasCtx.save();
         canvasCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
         canvasCtx.drawImage(results.image, 0, 0, outputCanvas.width, outputCanvas.height);
 
-        // 2. 如果检测到手，绘制赛博风格骨骼
         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
             const landmarks = results.multiHandLandmarks[0];
             const currentGesture = detectGesture(landmarks);
             
-            // 绘制连线 (黄色 - 科技感线条)
-            drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
-                color: '#FFFF00', // 黄色
-                lineWidth: 3
-            });
-            // 绘制关节 (红色 - 重点标记)
-            drawLandmarks(canvasCtx, landmarks, {
-                color: '#FF0000', // 红色
-                lineWidth: 1,
-                radius: 3
-            });
+            drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, { color: '#FFFF00', lineWidth: 3 });
+            drawLandmarks(canvasCtx, landmarks, { color: '#FF0000', lineWidth: 1, radius: 3 });
 
-            // 手势逻辑触发
-            let statusText = `手势: ${currentGesture}\n`;
             if (!isExploded && lastGesture === 'FIST' && currentGesture === 'OPEN') {
-                statusText += ">>> 激活: 烟花发射 <<<";
                 for(let i=0; i<3; i++) setTimeout(() => createFirework(), i * 300);
             }
-            window.logInfo(statusText);
             if (currentGesture !== 'BETWEEN') lastGesture = currentGesture;
         } else {
             lastGesture = 'UNKNOWN';
@@ -314,14 +321,21 @@
 
     function detectGesture(landmarks) { const wrist = landmarks[0]; const fingertips = [8, 12, 16, 20]; let foldedFingers = 0; fingertips.forEach(idx => { const tip = landmarks[idx]; const dist = Math.sqrt(Math.pow(tip.x - wrist.x, 2) + Math.pow(tip.y - wrist.y, 2)); if (dist < 0.15) foldedFingers++; }); if (foldedFingers >= 3) return 'FIST'; if (foldedFingers === 0) return 'OPEN'; return 'BETWEEN'; }
 
-    async function initMediaPipe() {
+    // ================= 手动启动逻辑 =================
+    const startBtn = document.getElementById('start_btn');
+    const startOverlay = document.getElementById('start_overlay');
+    const statusText = document.getElementById('status_text');
+
+    startBtn.onclick = async () => {
+        // 检查库是否已加载
         if (typeof Hands === 'undefined') {
-            window.logError("MediaPipe 库加载失败，请检查网络");
+            statusText.innerText = "错误：AI库未加载完成，请检查网络\n(正在尝试重新下载...)";
             return;
         }
 
-        window.logInfo("加载 AI 模型中...");
-        
+        statusText.innerText = "系统启动中，请允许摄像头权限...";
+        startBtn.style.display = 'none'; // 隐藏按钮防止重复点击
+
         const hands = new Hands({locateFile: (file) => {
             return `https://npm.elemecdn.com/@mediapipe/hands/${file}`;
         }});
@@ -334,20 +348,25 @@
                 onFrame: async () => { await hands.send({image: videoElement}); },
                 width: 320, height: 240, facingMode: 'user'
             });
-            // 设置 Canvas 分辨率匹配视频流比例 (4:3)
             outputCanvas.width = 320;
             outputCanvas.height = 240;
             
             await camera.start();
-            window.logInfo("系统就绪。\n拖动窗口，展示手势。");
+            
+            // 启动成功：隐藏遮罩，显示小窗口
+            startOverlay.style.display = 'none';
+            cameraContainer.style.display = 'block';
+            
         } catch (e) {
-            window.logError("摄像头错误: " + e.message);
+            startBtn.style.display = 'block';
+            statusText.innerText = "启动失败: " + e.message + "\n请务必使用 HTTPS 或 Safari 浏览器";
+            alert("无法启动摄像头：" + e.message);
         }
-    }
+    };
 
-    // Interactions
+    // Interactions (保持不变)
     window.addEventListener('touchstart', (event) => { 
-        if(isDraggingContainer) return; // 如果在拖拽摄像头，不触发3D交互
+        if(isDraggingContainer) return;
         touchStartTime = Date.now(); touchStartPos.set(event.touches[0].clientX, event.touches[0].clientY); if (event.touches.length > 1) { isMultiTouch = true; if (activeUUID) { const obj = floatingObjects.find(o => o.uuid === activeUUID); if (obj && (obj.userData.isTreeTop || obj.userData.pickType === 'photo')) { initialPinchDistance = getPinchDistance(event); initialScale = obj.userData.currentInspectionScale; } } } else { isMultiTouch = false; } isDragMove = false; }, { passive: false });
     window.addEventListener('touchmove', (event) => { if(isDraggingContainer) return; if (event.touches.length === 2) { isMultiTouch = true; if (activeUUID && initialPinchDistance > 0) { const obj = floatingObjects.find(o => o.uuid === activeUUID); if (obj && (obj.userData.isTreeTop || obj.userData.pickType === 'photo')) { const currentDistance = getPinchDistance(event); const scaleFactor = currentDistance / initialPinchDistance; const minScale = 0.5; const maxScale = obj.userData.isTreeTop ? 6.0 : 4.0; obj.userData.currentInspectionScale = clamp(initialScale * scaleFactor, minScale, maxScale); } } event.preventDefault(); return; } const dx = event.touches[0].clientX - touchStartPos.x; const dy = event.touches[0].clientY - touchStartPos.y; if (Math.sqrt(dx * dx + dy * dy) > 10) { isDragMove = true; } }, { passive: false });
     window.addEventListener('pointermove', (event) => { if (!isInspectionDragging || !activeUUID) return; const obj = floatingObjects.find(o => o.uuid === activeUUID); if (!obj || !obj.userData.isTreeTop) return; const deltaX = event.clientX - previousMouse.x; const deltaY = event.clientY - previousMouse.y; const rotateSpeed = isMobile ? 0.008 : 0.005; obj.rotation.y += deltaX * rotateSpeed; obj.rotation.x += deltaY * rotateSpeed; previousMouse.set(event.clientX, event.clientY); });
@@ -379,13 +398,6 @@
     window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); updateCameraPosition(); });
     updateCameraPosition();
     animate();
-
-    if (isMobile) {
-        window.logInfo("检测到手机\n正在初始化...");
-        setTimeout(() => { initMediaPipe(); }, 3000);
-    } else {
-        window.logInfo("电脑端模式\n请用手机访问以测试摄像头");
-    }
   </script>
 </body>
 </html>
