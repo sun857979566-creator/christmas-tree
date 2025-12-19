@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Cyber Christmas - Perfect Integration</title>
+  <title>我的3D照片圣诞树 - 丝滑触控版</title>
   <style>
     body {
       margin: 0;
@@ -11,56 +12,9 @@
       background-color: #000;
       user-select: none;
       -webkit-user-select: none;
-      touch-action: none; /* 禁止浏览器默认行为 */
-      font-family: 'Arial', sans-serif;
+      touch-action: none; /* 禁止浏览器默认缩放和滚动 */
     }
-
-    /* === 1. 启动页遮罩 (新增) === */
-    #overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.92); z-index: 2000;
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      color: #fff; text-align: center; transition: opacity 0.8s;
-    }
-    .title { font-size: 2rem; color: #00ffff; text-shadow: 0 0 20px #00ffff; margin-bottom: 10px; letter-spacing: 2px; }
-    #start_btn {
-      padding: 16px 48px; font-size: 18px; color: #444; background: #222; 
-      border: 1px solid #444; border-radius: 50px; font-weight: bold; 
-      pointer-events: none; transition: all 0.4s ease; text-transform: uppercase;
-    }
-    #start_btn.ready {
-      color: #000; background: #00ffff; border-color: #00ffff;
-      box-shadow: 0 0 30px rgba(0, 255, 255, 0.6); cursor: pointer; pointer-events: auto;
-    }
-
-    /* === 2. 悬浮摄像头窗口 (新增) === */
-    #cam_window {
-      position: absolute; bottom: 20px; right: 20px; width: 130px; height: 173px;
-      z-index: 1000; background: rgba(0,0,0,0.8);
-      border: 2px solid rgba(0, 255, 255, 0.6); border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
-      overflow: hidden; display: none; backdrop-filter: blur(5px);
-    }
-    #hand_canvas { width: 100%; height: 100%; transform: scaleX(-1); display: block; }
-    #raw_video { display: none; }
   </style>
-
-  <script>
-    window.activateBtn = function() {
-      const btn = document.getElementById('start_btn');
-      if (btn) { btn.classList.add('ready'); btn.innerText = 'ENTER WORLD'; }
-      else {
-        window.addEventListener('DOMContentLoaded', () => {
-           const b = document.getElementById('start_btn');
-           if(b) { b.classList.add('ready'); b.innerText = 'ENTER WORLD'; }
-        });
-      }
-    }
-  </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous" 
-    onload="window.activateBtn()" 
-    onerror="alert('AI组件加载超时，请刷新重试');"></script>
 
   <script type="importmap">
     {
@@ -73,15 +27,6 @@
 </head>
 
 <body>
-  <div id="overlay">
-    <div class="title">CYBER CHRISTMAS</div>
-    <div style="color:#888; margin-bottom:40px;">System Loading...</div>
-    <button id="start_btn">LOADING CORE...</button>
-  </div>
-
-  <div id="cam_window"><canvas id="hand_canvas"></canvas></div>
-  <video id="raw_video" playsinline webkit-playsinline></video>
-
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -89,14 +34,12 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-    // ==========================================
-    // 第一部分：3D 核心逻辑 (完全保留原版)
-    // ==========================================
-
+    // ================= 1. 核心布局数据 =================
     const FIXED_LAYOUT = [
       { "name": "giftbox4.glb", "pos": [10.33, -32, 59.09], "rot": 1.66 }, { "name": "giftbox1.glb", "pos": [21.06, -32, -2.97], "rot": 1.06 }, { "name": "giftbox3.glb", "pos": [10.07, -32, 39.08], "rot": 2.33 }, { "name": "giftbox3.glb", "pos": [6.9, -32, 63.75], "rot": 1.26 }, { "name": "giftbox2.glb", "pos": [23.1, -32, 48.07], "rot": 1.23 }, { "name": "giftbox1.glb", "pos": [18.68, -32, 0.85], "rot": 3.13 }, { "name": "giftbox4.glb", "pos": [1, -32, 13.04], "rot": 1.58 }, { "name": "giftbox1.glb", "pos": [-10.65, -32, -14.06], "rot": 0.05 }, { "name": "giftbox4.glb", "pos": [30.9, -32, 12.76], "rot": 1.51 }, { "name": "giftbox5.glb", "pos": [-16.37, -32, 66.98], "rot": 0.73 }, { "name": "giftbox2.glb", "pos": [-44.31, -32, 52.75], "rot": 0.14 }, { "name": "giftbox1.glb", "pos": [4.98, -32, 6.17], "rot": 1.06 }, { "name": "giftbox4.glb", "pos": [3.07, -32, 39.17], "rot": 0.33 }, { "name": "giftbox5.glb", "pos": [22.66, -32, 50.69], "rot": 2.3 }, { "name": "giftbox2.glb", "pos": [19.69, -32, -18.06], "rot": 2.8 }, { "name": "giftbox3.glb", "pos": [39.87, -32, 22.91], "rot": 1.87 }, { "name": "giftbox4.glb", "pos": [-25.88, -32, 43.69], "rot": 1.18 }, { "name": "giftbox2.glb", "pos": [33.85, -32, -3.28], "rot": 2.15 }, { "name": "giftbox2.glb", "pos": [18.23, -32, 22.29], "rot": 1.63 }
     ];
 
+    // ================= 2. 基础场景 =================
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
     scene.environment = scene.background;
@@ -114,6 +57,7 @@
     scene.add(dirLight);
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+
     const cameraLight = new THREE.PointLight(0xffffff, 1.5);
     cameraLight.position.set(5, 5, 5);
     camera.add(cameraLight);
@@ -137,7 +81,7 @@
     controls.maxDistance = 1000;
     controls.target.set(0, 5, 0);
 
-    // 全局变量 (原版)
+    // ================= 3. 全局变量 =================
     const floatingObjects = [];
     const lightBulbs = []; 
     let isExploded = false;
@@ -151,14 +95,14 @@
 
     let activeUUID = null;
 
-    // 交互控制变量 (原版)
+    // 交互控制变量
     let isInspectionDragging = false;
     const previousMouse = new THREE.Vector2();
     let initialPinchDistance = 0;
     let initialScale = 0;
     let lastTapTime = 0;
 
-    // 防误触变量 (原版)
+    // 【新增】防误触核心变量
     let touchStartTime = 0;
     let isMultiTouch = false;
     let isDragMove = false;
@@ -220,7 +164,7 @@
       return r;
     }
 
-    // 树顶逻辑 (原版)
+    // ================= 树顶逻辑 =================
     function getTreeTopWorldPoint(out = new THREE.Vector3()) {
       const box = new THREE.Box3();
       let has = false;
@@ -250,7 +194,7 @@
       obj.position.add(delta);
     }
 
-    // 星空
+    // ================= 4. 背景星空 =================
     function createGlowTexture() {
       const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
       const ctx = canvas.getContext('2d');
@@ -294,7 +238,8 @@
     const starMesh = new THREE.Points(starGeo, starMat);
     scene.add(starMesh);
 
-    // 树的数据
+    // ================= 5. 树 =================
+    // 【修改】强制使用高数量，无论手机还是电脑
     const TOTAL_LEAVES = 600; 
     const TREE_HEIGHT = 60;
     const TREE_RADIUS = 20;
@@ -384,6 +329,7 @@
     // B. 彩球
     const colors = [0xDC143C, 0xFFD700, 0x228B22, 0xE0E0E0];
     const baseSphereGeo = new THREE.SphereGeometry(0.3, 32, 32);
+    // 【修改】强制使用高数量
     const sphereCount = 450; 
     for (let i = 0; i < sphereCount; i++) {
       const sphere = new THREE.Mesh(baseSphereGeo, new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], metalness: 0.7, roughness: 0.35, envMapIntensity: 1.0 }));
@@ -399,7 +345,7 @@
       treeRoot.add(sphere);
     }
 
-    // C. 豹警官
+    // ================= C. 豹警官 =================
     const gltfLoader = new GLTFLoader();
     function loadClawhauserGLB(url) {
       gltfLoader.load(url, (gltf) => {
@@ -455,11 +401,12 @@
       });
     }
 
-    // E. 灯带
+    // E. 精致星光灯带
     function createLightStrip() {
       const lightStripGroup = new THREE.Group();
       const stripBottomY = -TREE_HEIGHT / 2 + 2; const stripTopY = TREE_HEIGHT / 2 - 5; const stripHeight = stripTopY - stripBottomY;
       const radiusBottom = TREE_RADIUS + 2; const radiusTop = 4; const turns = 6; 
+      // 【修改】强制使用高数量
       const lightCount = 250;
       
       const bulbGeo = new THREE.SphereGeometry(isMobile ? 0.1 : 0.15, 8, 8);
@@ -495,137 +442,19 @@
     }
     createLightStrip();
 
-    // ==========================================
-    // 第二部分：手势与烟花 (新增插件)
-    // ==========================================
-
-    const startBtn = document.getElementById('start_btn');
-    const overlay = document.getElementById('overlay');
-    const video = document.getElementById('raw_video');
-    const canvas = document.getElementById('hand_canvas');
-    const ctx = canvas.getContext('2d');
+    // ================= 6. 交互逻辑 =================
     
-    // 悬浮窗拖拽
-    const camWin = document.getElementById('cam_window');
-    let isDraggingCam = false; let camDragStart = {x:0, y:0};
-    camWin.addEventListener('touchstart', (e)=>{
-        isDraggingCam = true;
-        camDragStart.x = e.touches[0].clientX - camWin.offsetLeft;
-        camDragStart.y = e.touches[0].clientY - camWin.offsetTop;
-        e.stopPropagation();
-    }, {passive:false});
-    window.addEventListener('touchmove', (e)=>{
-        if(!isDraggingCam) return;
-        e.preventDefault();
-        camWin.style.left = (e.touches[0].clientX - camDragStart.x) + 'px';
-        camWin.style.top = (e.touches[0].clientY - camDragStart.y) + 'px';
-        camWin.style.right = 'auto'; camWin.style.bottom = 'auto';
-    }, {passive:false});
-    window.addEventListener('touchend', ()=>isDraggingCam=false);
-
-    // AI 初始化
-    let handLandmarker = null;
-    let lastGesture = 'UNKNOWN';
-    const HAND_CONNECTIONS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
-
-    startBtn.onclick = async () => {
-        if(startBtn.innerText === 'INITIALIZING...') return;
-        try {
-            startBtn.innerText = 'INITIALIZING...';
-            
-            const hands = new Hands({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`});
-            hands.setOptions({maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5});
-            hands.onResults(onAIResults);
-            handLandmarker = hands;
-
-            const stream = await navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:"user", width:320, height:240}});
-            video.srcObject = stream;
-            video.onloadedmetadata = () => {
-                video.play();
-                overlay.style.opacity = '0';
-                setTimeout(()=>overlay.style.display='none', 800);
-                document.getElementById('cam_window').style.display='block';
-                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-                processVideoFrame();
-            };
-        } catch(e) {
-            alert("启动失败：请检查权限或HTTPS\n" + e.message);
-            startBtn.innerText = "RETRY";
-        }
-    };
-
-    async function processVideoFrame() {
-        if(handLandmarker && video.readyState>=2) await handLandmarker.send({image:video});
-        requestAnimationFrame(processVideoFrame);
-    }
-
-    // 烟花系统
-    const fireworks = [];
-    function createFirework() {
-      const cnt = 150; const geo = new THREE.BufferGeometry();
-      const pos = []; const col = []; const vel = [];
-      const color = new THREE.Color().setHSL(Math.random(), 1, 0.6);
-      for(let i=0; i<cnt; i++){
-        pos.push(0,40,0); col.push(color.r, color.g, color.b);
-        vel.push(new THREE.Vector3((Math.random()-0.5),(Math.random()-0.5),(Math.random()-0.5)).normalize().multiplyScalar(1+Math.random()*2));
-      }
-      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
-      geo.setAttribute('color', new THREE.Float32BufferAttribute(col,3));
-      const pts = new THREE.Points(geo, new THREE.PointsMaterial({size:2, vertexColors:true, transparent:true, blending:THREE.AdditiveBlending, map:createGlowTexture(), depthWrite:false}));
-      pts.userData = {vel:vel, life:1.0};
-      scene.add(pts); fireworks.push(pts);
-    }
-    function updateFireworks() {
-      for(let i=fireworks.length-1; i>=0; i--){
-        const fw = fireworks[i]; const p = fw.geometry.attributes.position.array;
-        fw.userData.life -= 0.015; fw.material.opacity = fw.userData.life;
-        for(let j=0; j<fw.userData.vel.length; j++){
-          const v = fw.userData.vel[j]; v.y -= 0.03;
-          p[j*3]+=v.x; p[j*3+1]+=v.y; p[j*3+2]+=v.z;
-        }
-        fw.geometry.attributes.position.needsUpdate = true;
-        if(fw.userData.life<=0){ scene.remove(fw); fireworks.splice(i,1); }
-      }
-    }
-
-    function onAIResults(res) {
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(res.image,0,0,canvas.width,canvas.height);
-        if(res.multiHandLandmarks && res.multiHandLandmarks.length>0){
-            const lm = res.multiHandLandmarks[0];
-            
-            // 画线
-            ctx.lineWidth=2; ctx.strokeStyle='#FFFF00';
-            for(const [s,e] of HAND_CONNECTIONS){
-                ctx.beginPath(); ctx.moveTo(lm[s].x*canvas.width, lm[s].y*canvas.height);
-                ctx.lineTo(lm[e].x*canvas.width, lm[e].y*canvas.height); ctx.stroke();
-            }
-            // 画点
-            ctx.fillStyle='#FF0000';
-            for(const p of lm){ ctx.beginPath(); ctx.arc(p.x*canvas.width, p.y*canvas.height, 3,0,2*Math.PI); ctx.fill(); }
-            
-            // 检测握拳
-            const tips=[8,12,16,20]; let f=0; const w=lm[0];
-            tips.forEach(i=>{ if(Math.hypot(lm[i].x-w.x, lm[i].y-w.y)<0.15) f++; });
-            const g = f>=3?'FIST':(f===0?'OPEN':'BETWEEN');
-            
-            if(!isExploded && lastGesture==='FIST' && g==='OPEN') {
-                for(let i=0;i<5;i++) setTimeout(createFirework, i*200);
-            }
-            if(g!=='BETWEEN') lastGesture = g;
-        }
-    }
-
-    // ==========================================
-    // 第三部分：交互与渲染 (核心复原)
-    // ==========================================
-
+    // 【修改】新增：检测触摸开始
     window.addEventListener('touchstart', (event) => {
-        if(isDraggingCam) return;
+        // 记录开始时间
         touchStartTime = Date.now();
+        // 记录第一根手指的位置
         touchStartPos.set(event.touches[0].clientX, event.touches[0].clientY);
+        
+        // 如果是双指，标记为多指操作
         if (event.touches.length > 1) {
             isMultiTouch = true;
+            // 此时也是缩放的开始，记录初始距离
             if (activeUUID) {
                const obj = floatingObjects.find(o => o.uuid === activeUUID);
                if (obj && (obj.userData.isTreeTop || obj.userData.pickType === 'photo')) {
@@ -636,13 +465,15 @@
         } else {
             isMultiTouch = false;
         }
-        isDragMove = false; 
+        
+        isDragMove = false; // 重置拖拽标记
     }, { passive: false });
 
+    // 【修改】检测触摸移动
     window.addEventListener('touchmove', (event) => {
-        if(isDraggingCam) return;
+        // 如果是双指，执行缩放逻辑
         if (event.touches.length === 2) {
-            isMultiTouch = true; 
+            isMultiTouch = true; // 确保标记
             if (activeUUID && initialPinchDistance > 0) {
                 const obj = floatingObjects.find(o => o.uuid === activeUUID);
                 if (obj && (obj.userData.isTreeTop || obj.userData.pickType === 'photo')) {
@@ -653,32 +484,41 @@
                     obj.userData.currentInspectionScale = clamp(initialScale * scaleFactor, minScale, maxScale);
                 }
             }
-            event.preventDefault(); 
+            event.preventDefault(); // 阻止浏览器默认缩放
             return;
         }
+
+        // 如果是单指，检测移动距离是否超过阈值（防误触）
         const dx = event.touches[0].clientX - touchStartPos.x;
         const dy = event.touches[0].clientY - touchStartPos.y;
-        if (Math.sqrt(dx * dx + dy * dy) > 10) { isDragMove = true; }
+        if (Math.sqrt(dx * dx + dy * dy) > 10) {
+            isDragMove = true;
+        }
     }, { passive: false });
 
+    // 鼠标/单指拖动控制 (用于旋转豹警官)
     window.addEventListener('pointermove', (event) => {
+      // 只有在显式拖拽豹警官时才生效
       if (!isInspectionDragging || !activeUUID) return;
       const obj = floatingObjects.find(o => o.uuid === activeUUID);
       if (!obj || !obj.userData.isTreeTop) return;
 
       const deltaX = event.clientX - previousMouse.x;
       const deltaY = event.clientY - previousMouse.y;
+
       const rotateSpeed = isMobile ? 0.008 : 0.005;
-      
-      // 豹警官旋转逻辑 (复原)
       obj.rotation.y += deltaX * rotateSpeed;
       obj.rotation.x += deltaY * rotateSpeed;
 
       previousMouse.set(event.clientX, event.clientY);
     });
 
+    // 【修改】pointerdown 只负责记录鼠标位置和检测是否点击了豹警官准备拖拽
     window.addEventListener('pointerdown', (event) => {
+        // 记录鼠标位置供 pointermove 计算 delta
         previousMouse.set(event.clientX, event.clientY);
+
+        // 检测是否点击了豹警官 (为了旋转)
         if (activeUUID) {
             const obj = floatingObjects.find(o => o.uuid === activeUUID);
             if (obj && obj.userData.isTreeTop) {
@@ -686,62 +526,19 @@
                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
                raycaster.setFromCamera(mouse, camera);
                const hits = raycaster.intersectObject(obj, true);
-               if (hits.length > 0) { isInspectionDragging = true; }
+               if (hits.length > 0) {
+                   isInspectionDragging = true;
+               }
             }
         }
     });
 
-    window.addEventListener('pointerup', (event) => {
-        isInspectionDragging = false;
-        initialPinchDistance = 0; 
-        if(isDraggingCam) { isDraggingCam = false; return; }
-        
-        if (!isExploded) return;
-        if (isMultiTouch) return;
-        if (isDragMove) return; 
-
-        scene.updateMatrixWorld(true);
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(floatingObjects, true);
-        const roots = []; const seen = new Set();
-        for (const hit of intersects) {
-            const root = findInteractiveRoot(hit.object);
-            if (root && !seen.has(root.uuid)) { seen.add(root.uuid); roots.push(root); }
-        }
-
-        if (roots.length === 0) {
-            if (activeUUID) {
-                const currentObj = floatingObjects.find(o => o.uuid === activeUUID);
-                if (currentObj && currentObj.userData.isTreeTop) return; 
-                unpinCurrent(); 
-            }
-            return;
-        }
-
-        let chosen = roots.find(r => r.userData.pickType === 'gift');
-        if (!chosen) chosen = roots[0];
-        if (activeUUID === chosen.uuid) return; 
-        pinObject(chosen);
+    window.addEventListener('pointerup', () => {
+      isInspectionDragging = false;
+      initialPinchDistance = 0; 
     });
 
-    window.addEventListener('dblclick', () => { triggerExplosionOrReset(); });
-
-    window.addEventListener('touchend', (event) => {
-        if(isDraggingCam) return;
-        if (event.touches.length === 0) setTimeout(() => { isMultiTouch = false; }, 100);
-        const currentTime = new Date().getTime();
-        const tapLength = currentTime - lastTapTime;
-        if (tapLength < 300 && tapLength > 0) {
-            if (event.changedTouches.length === 1 && !isDragMove) {
-                triggerExplosionOrReset();
-                event.preventDefault(); 
-            }
-        }
-        lastTapTime = currentTime;
-    });
-    
+    // 滚轮缩放
     window.addEventListener('wheel', (event) => {
       handleZoom(event.deltaY);
     }, { passive: false });
@@ -781,7 +578,10 @@
     }
 
     function triggerExplosionOrReset() {
-      if (activeUUID) { unpinCurrent(); return; }
+      if (activeUUID) {
+        unpinCurrent();
+        return;
+      }
       isExploded = !isExploded;
       isCameraMoving = true;
       controls.enabled = false;
@@ -823,6 +623,76 @@
       }
     }
 
+    // 【重要修改】使用 pointerup (或 touchend) 来触发点击逻辑，解决冲突
+    window.addEventListener('pointerup', (event) => {
+        // 如果不是在炸开状态，不处理
+        if (!isExploded) return;
+        
+        // 1. 如果是多指操作（缩放中），不触发点击
+        if (isMultiTouch) return;
+
+        // 2. 如果发生了明显的拖动（旋转或滑动），不触发点击
+        // 对于 pointer 设备，pointermove 已经处理了 isInspectionDragging 的逻辑
+        // 这里主要通过 touch 逻辑里的 isDragMove 配合判断
+        // 注意：pointerup 也会在鼠标点击时触发
+        if (isDragMove) return; 
+
+        // 3. 执行射线检测
+        scene.updateMatrixWorld(true);
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(floatingObjects, true);
+        const roots = []; const seen = new Set();
+        for (const hit of intersects) {
+            const root = findInteractiveRoot(hit.object);
+            if (root && !seen.has(root.uuid)) { seen.add(root.uuid); roots.push(root); }
+        }
+
+        // 4. 点击背景
+        if (roots.length === 0) {
+            // 如果没点到东西，且当前有选中物
+            if (activeUUID) {
+                const currentObj = floatingObjects.find(o => o.uuid === activeUUID);
+                // 豹警官不退出 (为了防止旋转时不小心点到外面)
+                if (currentObj && currentObj.userData.isTreeTop) return; 
+                // 其他物体直接退出
+                unpinCurrent(); 
+            }
+            return;
+        }
+
+        // 5. 点到了物体
+        let chosen = roots.find(r => r.userData.pickType === 'gift');
+        if (!chosen) chosen = roots[0];
+
+        if (activeUUID === chosen.uuid) return; // 点到自己
+
+        pinObject(chosen);
+    });
+
+    window.addEventListener('dblclick', () => {
+        triggerExplosionOrReset();
+    });
+
+    window.addEventListener('touchend', (event) => {
+        // 重置多指状态 (如果是最后一根手指离开)
+        if (event.touches.length === 0) {
+            setTimeout(() => { isMultiTouch = false; }, 100); // 延迟一点重置，防止 pointerup 误判
+        }
+
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTapTime;
+        if (tapLength < 300 && tapLength > 0) {
+            // 检测到双击，且不是双指操作，且没有大幅移动
+            if (event.changedTouches.length === 1 && !isDragMove) {
+                triggerExplosionOrReset();
+                event.preventDefault(); 
+            }
+        }
+        lastTapTime = currentTime;
+    });
+
     function updateCameraPosition() {
       const aspect = window.innerWidth / window.innerHeight;
       if (aspect < 1) { camera.userData.treePos = new THREE.Vector3(0, 5, 110); camera.userData.orbitPos = new THREE.Vector3(0, 30, 280); }
@@ -839,8 +709,6 @@
           const sparkle = Math.sin(t * 10 + bulb.userData.blinkOffset) * 0.5 + Math.sin(t * 25 + bulb.userData.blinkOffset * 2) * 0.3;
           bulb.material.emissiveIntensity = 2.5 + sparkle * 1.5;
       });
-      
-      updateFireworks(); // 更新烟花
 
       if (isCameraMoving) {
         camera.position.lerp(targetCameraPos, 0.03);
@@ -859,7 +727,6 @@
              alignLocalCenterToWorldPoint(obj, obj.userData.localCenter, obj.userData.inspectionPos);
              let bigScale = obj.userData.originScale.clone().multiplyScalar(obj.userData.currentInspectionScale);
              obj.scale.lerp(bigScale, 0.12);
-             // 豹警官旋转不由这里控制，完全交给 pointermove
              return;
           }
           const dist = obj.userData.pinnedDist || (isMobile ? 70 : 60);
