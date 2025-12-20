@@ -48,7 +48,7 @@
     /* 隐藏原始视频 */
     #raw_video { display: none; }
 
-    /* === 【新增】顶部控制按钮通用样式 === */
+    /* === 顶部控制按钮通用样式 === */
     .control-btn {
         position: absolute;
         top: 20px;
@@ -73,15 +73,14 @@
     .control-btn svg {
         width: 24px;
         height: 24px;
-        /* 图标颜色：半透明白色 */
-        fill: rgba(255, 255, 255, 0.8);
+        fill: rgba(255, 255, 255, 0.9);
         transition: fill 0.3s ease;
     }
     /* 关闭状态下的样式：图标变暗 */
     .control-btn.off svg {
         fill: rgba(255, 255, 255, 0.3);
     }
-
+    
     /* 左上角相机按钮位置 */
     #cam_toggle { left: 20px; }
     /* 右上角音乐按钮位置 */
@@ -94,7 +93,7 @@
   <script>
     function activateBtn() {
       const btn = document.getElementById('start_btn');
-      if(btn) { btn.classList.add('ready'); btn.innerText = '启动系统 / START'; }
+      if(btn) { btn.classList.add('ready'); btn.innerText = '欢迎来到Mia的圣诞树'; }
     }
     // 稍微延迟一下确保库加载
     window.addEventListener('load', () => setTimeout(activateBtn, 1000));
@@ -165,7 +164,6 @@
     scene.add(camera);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    // 限制像素比，防止手机端性能过载
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.useLegacyLights = false;
 
@@ -629,7 +627,7 @@
 
     // ================= 系统启动逻辑 (摄像头 & 手势 & 音乐) =================
     
-    // 音乐文件链接 (处理空格)
+    // 音乐文件链接
     const musicUrl = 'https://raw.githubusercontent.com/sun857979566-creator/christmas-tree/main/just%20love%20u.mp3';
     let sound = null;
 
@@ -642,18 +640,20 @@
         const audioLoader = new THREE.AudioLoader();
 
         console.log("正在加载音乐...");
+        // 标记音乐按钮为加载中（半透明）
+        const musicBtn = document.getElementById('music_toggle');
+        musicBtn.classList.add('off'); // 先设为off表示未播放
+
         audioLoader.load(musicUrl, function(buffer) {
             sound.setBuffer(buffer);
             sound.setLoop(true); // 循环播放
             sound.setVolume(0.5); // 音量
             sound.play(); // 加载完成后直接播放
             console.log("音乐开始播放");
-            // 音乐开始播放，移除按钮的off类
-            document.getElementById('music_toggle').classList.remove('off');
+            // 音乐开始播放，移除按钮的off类，变亮
+            musicBtn.classList.remove('off');
         }, undefined, function(err) {
             console.error("音乐加载失败", err);
-            // 音乐加载失败，保持按钮为off状态
-            document.getElementById('music_toggle').classList.add('off');
         });
     }
 
@@ -669,9 +669,16 @@
         if(startBtn.innerText === 'LOADING...') return; // 还没准备好
         
         try {
+            // 【关键修改】在用户点击的瞬间，立刻强制激活音频上下文
+            // 解决 iOS 和 Chrome 自动播放策略拦截的问题
+            const audioCtx = THREE.AudioContext.getContext();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
             startBtn.innerText = 'INITIALIZING...';
             
-            // 点击按钮时，同时启动音乐
+            // 启动音乐加载
             initMusic();
             
             // 1. 初始化 AI
@@ -705,7 +712,7 @@
                 // 摄像头显示，移除按钮的off类
                 document.getElementById('cam_toggle').classList.remove('off');
 
-                // 【新增】显示顶部的控制按钮
+                // 显示顶部的控制按钮
                 document.getElementById('cam_toggle').style.display = 'flex';
                 document.getElementById('music_toggle').style.display = 'flex';
                 
@@ -1154,7 +1161,7 @@
     updateCameraPosition();
     animate();
 
-    // ================= 【新增】控制按钮逻辑 =================
+    // ================= 控制按钮逻辑 =================
     const camToggleBtn = document.getElementById('cam_toggle');
     const musicToggleBtn = document.getElementById('music_toggle');
 
