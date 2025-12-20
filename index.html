@@ -41,11 +41,52 @@
       box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
       overflow: hidden; display: none; /* 启动前隐藏 */
       backdrop-filter: blur(4px);
+      transition: all 0.3s ease;
     }
     /* 画布镜像翻转 */
     #hand_canvas { width: 100%; height: 100%; transform: scaleX(-1); display: block; }
     /* 隐藏原始视频 */
     #raw_video { display: none; }
+
+    /* === 【新增】顶部控制按钮通用样式 === */
+    .control-btn {
+        position: absolute;
+        top: 20px;
+        width: 44px;
+        height: 44px;
+        /* 半透明白色圆形背景 */
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        z-index: 1500;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(2px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .control-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    /* SVG图标样式 */
+    .control-btn svg {
+        width: 24px;
+        height: 24px;
+        /* 图标颜色：半透明白色 */
+        fill: rgba(255, 255, 255, 0.8);
+        transition: fill 0.3s ease;
+    }
+    /* 关闭状态下的样式：图标变暗 */
+    .control-btn.off svg {
+        fill: rgba(255, 255, 255, 0.3);
+    }
+
+    /* 左上角相机按钮位置 */
+    #cam_toggle { left: 20px; }
+    /* 右上角音乐按钮位置 */
+    #music_toggle { right: 20px; }
+
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
@@ -70,6 +111,14 @@
 </head>
 
 <body>
+  <div id="cam_toggle" class="control-btn" style="display:none;">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+  </div>
+
+  <div id="music_toggle" class="control-btn" style="display:none;">
+      <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+  </div>
+
   <div id="overlay">
     <div style="font-size: 2rem; color: #00ffff; text-shadow: 0 0 20px #00ffff;">CYBER CHRISTMAS</div>
     <div style="color: #888; margin-top: 10px;">Gesture Control System Loading...</div>
@@ -116,7 +165,7 @@
     scene.add(camera);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    // 【修改】限制像素比，防止手机端性能过载
+    // 限制像素比，防止手机端性能过载
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.useLegacyLights = false;
 
@@ -580,11 +629,11 @@
 
     // ================= 系统启动逻辑 (摄像头 & 手势 & 音乐) =================
     
-    // 【新增】音乐文件链接 (处理空格)
+    // 音乐文件链接 (处理空格)
     const musicUrl = 'https://raw.githubusercontent.com/sun857979566-creator/christmas-tree/main/just%20love%20u.mp3';
     let sound = null;
 
-    // 【新增】音乐初始化函数
+    // 音乐初始化函数
     function initMusic() {
         const listener = new THREE.AudioListener();
         camera.add(listener); // 绑定到相机
@@ -599,8 +648,12 @@
             sound.setVolume(0.5); // 音量
             sound.play(); // 加载完成后直接播放
             console.log("音乐开始播放");
+            // 音乐开始播放，移除按钮的off类
+            document.getElementById('music_toggle').classList.remove('off');
         }, undefined, function(err) {
             console.error("音乐加载失败", err);
+            // 音乐加载失败，保持按钮为off状态
+            document.getElementById('music_toggle').classList.add('off');
         });
     }
 
@@ -609,6 +662,7 @@
     const videoElement = document.getElementById('raw_video');
     const canvasElement = document.getElementById('hand_canvas');
     const canvasCtx = canvasElement.getContext('2d');
+    const camWindow = document.getElementById('cam_window');
     
     // 启动按钮点击
     startBtn.onclick = async () => {
@@ -617,7 +671,7 @@
         try {
             startBtn.innerText = 'INITIALIZING...';
             
-            // 【新增】点击按钮时，同时启动音乐
+            // 点击按钮时，同时启动音乐
             initMusic();
             
             // 1. 初始化 AI
@@ -647,7 +701,13 @@
                 // 3. 启动成功：隐藏遮罩，显示悬浮窗
                 overlay.style.opacity = '0';
                 setTimeout(() => { overlay.style.display = 'none'; }, 800);
-                document.getElementById('cam_window').style.display = 'block';
+                camWindow.style.display = 'block';
+                // 摄像头显示，移除按钮的off类
+                document.getElementById('cam_toggle').classList.remove('off');
+
+                // 【新增】显示顶部的控制按钮
+                document.getElementById('cam_toggle').style.display = 'flex';
+                document.getElementById('music_toggle').style.display = 'flex';
                 
                 // 设置 Canvas 大小
                 canvasElement.width = videoElement.videoWidth;
@@ -738,25 +798,24 @@
     }
 
     // ================= 悬浮窗拖拽逻辑 =================
-    const camWin = document.getElementById('cam_window');
     let isDraggingCam = false;
     let camDragStartX = 0;
     let camDragStartY = 0;
 
-    camWin.addEventListener('touchstart', (e) => {
+    camWindow.addEventListener('touchstart', (e) => {
         isDraggingCam = true;
-        camDragStartX = e.touches[0].clientX - camWin.offsetLeft;
-        camDragStartY = e.touches[0].clientY - camWin.offsetTop;
+        camDragStartX = e.touches[0].clientX - camWindow.offsetLeft;
+        camDragStartY = e.touches[0].clientY - camWindow.offsetTop;
         e.stopPropagation(); // 阻止冒泡，防止拖拽摄像头时转动 3D 场景
     }, { passive: false });
 
     window.addEventListener('touchmove', (e) => {
         if (!isDraggingCam) return;
         e.preventDefault();
-        camWin.style.left = (e.touches[0].clientX - camDragStartX) + 'px';
-        camWin.style.top = (e.touches[0].clientY - camDragStartY) + 'px';
-        camWin.style.right = 'auto'; // 清除 right/bottom 属性避免冲突
-        camWin.style.bottom = 'auto';
+        camWindow.style.left = (e.touches[0].clientX - camDragStartX) + 'px';
+        camWindow.style.top = (e.touches[0].clientY - camDragStartY) + 'px';
+        camWindow.style.right = 'auto'; // 清除 right/bottom 属性避免冲突
+        camWindow.style.bottom = 'auto';
     }, { passive: false });
 
     window.addEventListener('touchend', () => {
@@ -1085,17 +1144,44 @@
       renderer.render(scene, camera);
     }
 
-    // 【修改】适配高分屏，限制像素比，同时触发 onWindowResize
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight; 
       camera.updateProjectionMatrix(); 
       renderer.setSize(window.innerWidth, window.innerHeight); 
-      // 保持渲染比例一致
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       updateCameraPosition();
     });
     updateCameraPosition();
     animate();
+
+    // ================= 【新增】控制按钮逻辑 =================
+    const camToggleBtn = document.getElementById('cam_toggle');
+    const musicToggleBtn = document.getElementById('music_toggle');
+
+    // 相机开关逻辑
+    camToggleBtn.addEventListener('click', () => {
+        if (camWindow.style.display === 'none') {
+            camWindow.style.display = 'block';
+            camToggleBtn.classList.remove('off');
+        } else {
+            camWindow.style.display = 'none';
+            camToggleBtn.classList.add('off');
+        }
+    });
+
+    // 音乐开关逻辑
+    musicToggleBtn.addEventListener('click', () => {
+        // 确保音乐已加载
+        if (!sound || !sound.buffer) return;
+
+        if (sound.isPlaying) {
+            sound.pause();
+            musicToggleBtn.classList.add('off');
+        } else {
+            sound.play();
+            musicToggleBtn.classList.remove('off');
+        }
+    });
   </script>
 </body>
 </html>
