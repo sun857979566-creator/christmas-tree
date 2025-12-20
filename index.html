@@ -16,7 +16,7 @@
       font-family: 'Arial', sans-serif;
     }
 
-    /* === 1. 新增：启动遮罩层 === */
+    /* === 启动遮罩层 === */
     #overlay {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.92); z-index: 2000;
@@ -33,7 +33,7 @@
       box-shadow: 0 0 30px rgba(0, 255, 255, 0.6); cursor: pointer; pointer-events: auto;
     }
 
-    /* === 2. 新增：悬浮摄像头窗口 (可拖拽) === */
+    /* === 悬浮摄像头窗口 === */
     #cam_window {
       position: absolute; bottom: 20px; right: 20px; width: 130px; height: 173px; /* 4:3 比例 */
       z-index: 1000; background: rgba(0, 0, 0, 0.6);
@@ -86,12 +86,12 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-    // ================= 1. 核心布局数据 (保持不变) =================
+    // ================= 1. 核心布局数据 =================
     const FIXED_LAYOUT = [
       { "name": "giftbox4.glb", "pos": [10.33, -32, 59.09], "rot": 1.66 }, { "name": "giftbox1.glb", "pos": [21.06, -32, -2.97], "rot": 1.06 }, { "name": "giftbox3.glb", "pos": [10.07, -32, 39.08], "rot": 2.33 }, { "name": "giftbox3.glb", "pos": [6.9, -32, 63.75], "rot": 1.26 }, { "name": "giftbox2.glb", "pos": [23.1, -32, 48.07], "rot": 1.23 }, { "name": "giftbox1.glb", "pos": [18.68, -32, 0.85], "rot": 3.13 }, { "name": "giftbox4.glb", "pos": [1, -32, 13.04], "rot": 1.58 }, { "name": "giftbox1.glb", "pos": [-10.65, -32, -14.06], "rot": 0.05 }, { "name": "giftbox4.glb", "pos": [30.9, -32, 12.76], "rot": 1.51 }, { "name": "giftbox5.glb", "pos": [-16.37, -32, 66.98], "rot": 0.73 }, { "name": "giftbox2.glb", "pos": [-44.31, -32, 52.75], "rot": 0.14 }, { "name": "giftbox1.glb", "pos": [4.98, -32, 6.17], "rot": 1.06 }, { "name": "giftbox4.glb", "pos": [3.07, -32, 39.17], "rot": 0.33 }, { "name": "giftbox5.glb", "pos": [22.66, -32, 50.69], "rot": 2.3 }, { "name": "giftbox2.glb", "pos": [19.69, -32, -18.06], "rot": 2.8 }, { "name": "giftbox3.glb", "pos": [39.87, -32, 22.91], "rot": 1.87 }, { "name": "giftbox4.glb", "pos": [-25.88, -32, 43.69], "rot": 1.18 }, { "name": "giftbox2.glb", "pos": [33.85, -32, -3.28], "rot": 2.15 }, { "name": "giftbox2.glb", "pos": [18.23, -32, 22.29], "rot": 1.63 }
     ];
 
-    // ================= 2. 基础场景 (保持不变) =================
+    // ================= 2. 基础场景 =================
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
     scene.environment = scene.background;
@@ -116,7 +116,8 @@
     scene.add(camera);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
+    // 【修改】限制像素比，防止手机端性能过载
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.useLegacyLights = false;
 
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -133,7 +134,7 @@
     controls.maxDistance = 1000;
     controls.target.set(0, 5, 0);
 
-    // ================= 3. 全局变量 (保持不变，增加 AI 变量) =================
+    // ================= 3. 全局变量 =================
     const floatingObjects = [];
     const lightBulbs = []; 
     let isExploded = false;
@@ -160,9 +161,9 @@
     let isDragMove = false;
     const touchStartPos = new THREE.Vector2();
 
-    // 【新增】烟花粒子系统变量
+    // 烟花粒子系统变量
     const fireworks = []; 
-    // 【新增】手势变量
+    // 手势变量
     let handLandmarker = null;
     let lastGesture = 'UNKNOWN';
     const HAND_CONNECTIONS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
@@ -223,7 +224,7 @@
       return r;
     }
 
-    // ================= 树顶逻辑 (保持不变) =================
+    // ================= 树顶逻辑 =================
     function getTreeTopWorldPoint(out = new THREE.Vector3()) {
       const box = new THREE.Box3();
       let has = false;
@@ -253,7 +254,7 @@
       obj.position.add(delta);
     }
 
-    // ================= 4. 背景星空 (保持不变) =================
+    // ================= 4. 背景星空 =================
     function createGlowTexture() {
       const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
       const ctx = canvas.getContext('2d');
@@ -297,7 +298,7 @@
     const starMesh = new THREE.Points(starGeo, starMat);
     scene.add(starMesh);
 
-    // ================= 5. 树 (保持不变) =================
+    // ================= 5. 树 =================
     const TOTAL_LEAVES = 600; 
     const TREE_HEIGHT = 60;
     const TREE_RADIUS = 20;
@@ -498,7 +499,7 @@
     }
     createLightStrip();
 
-    // ================= 【新增】烟花粒子系统 =================
+    // ================= 烟花粒子系统 =================
     function createFirework() {
         const particleCount = 150; // 粒子数量
         const geometry = new THREE.BufferGeometry();
@@ -577,7 +578,32 @@
         }
     }
 
-    // ================= 【新增】系统启动逻辑 (摄像头 & 手势) =================
+    // ================= 系统启动逻辑 (摄像头 & 手势 & 音乐) =================
+    
+    // 【新增】音乐文件链接 (处理空格)
+    const musicUrl = 'https://raw.githubusercontent.com/sun857979566-creator/christmas-tree/main/just%20love%20u.mp3';
+    let sound = null;
+
+    // 【新增】音乐初始化函数
+    function initMusic() {
+        const listener = new THREE.AudioListener();
+        camera.add(listener); // 绑定到相机
+
+        sound = new THREE.Audio(listener);
+        const audioLoader = new THREE.AudioLoader();
+
+        console.log("正在加载音乐...");
+        audioLoader.load(musicUrl, function(buffer) {
+            sound.setBuffer(buffer);
+            sound.setLoop(true); // 循环播放
+            sound.setVolume(0.5); // 音量
+            sound.play(); // 加载完成后直接播放
+            console.log("音乐开始播放");
+        }, undefined, function(err) {
+            console.error("音乐加载失败", err);
+        });
+    }
+
     const startBtn = document.getElementById('start_btn');
     const overlay = document.getElementById('overlay');
     const videoElement = document.getElementById('raw_video');
@@ -590,6 +616,9 @@
         
         try {
             startBtn.innerText = 'INITIALIZING...';
+            
+            // 【新增】点击按钮时，同时启动音乐
+            initMusic();
             
             // 1. 初始化 AI
             const hands = new Hands({locateFile: (file) => {
@@ -708,7 +737,7 @@
         return 'BETWEEN';
     }
 
-    // ================= 【新增】悬浮窗拖拽逻辑 =================
+    // ================= 悬浮窗拖拽逻辑 =================
     const camWin = document.getElementById('cam_window');
     let isDraggingCam = false;
     let camDragStartX = 0;
@@ -734,7 +763,7 @@
         isDraggingCam = false;
     });
 
-    // ================= 6. 3D 交互逻辑 (保持不变) =================
+    // ================= 6. 3D 交互逻辑 =================
     
     // 检测触摸开始
     window.addEventListener('touchstart', (event) => {
@@ -749,8 +778,8 @@
             if (activeUUID) {
                const obj = floatingObjects.find(o => o.uuid === activeUUID);
                if (obj && (obj.userData.isTreeTop || obj.userData.pickType === 'photo')) {
-                  initialPinchDistance = getPinchDistance(event);
-                  initialScale = obj.userData.currentInspectionScale;
+                 initialPinchDistance = getPinchDistance(event);
+                 initialScale = obj.userData.currentInspectionScale;
                }
             }
         } else {
@@ -983,7 +1012,7 @@
           bulb.material.emissiveIntensity = 2.5 + sparkle * 1.5;
       });
 
-      // 【新增】更新烟花粒子
+      // 更新烟花粒子
       updateFireworks();
 
       if (isCameraMoving) {
@@ -1056,8 +1085,14 @@
       renderer.render(scene, camera);
     }
 
+    // 【修改】适配高分屏，限制像素比，同时触发 onWindowResize
     window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); updateCameraPosition();
+      camera.aspect = window.innerWidth / window.innerHeight; 
+      camera.updateProjectionMatrix(); 
+      renderer.setSize(window.innerWidth, window.innerHeight); 
+      // 保持渲染比例一致
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      updateCameraPosition();
     });
     updateCameraPosition();
     animate();
