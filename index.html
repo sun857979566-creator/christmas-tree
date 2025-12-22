@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
@@ -16,144 +17,276 @@
       font-family: 'Arial', sans-serif;
     }
 
-    #overlay{
-      position:absolute;top:0;left:0;width:100%;height:100%;
-      background:rgba(0,0,0,0.92);z-index:2000;
-      display:flex;flex-direction:column;justify-content:center;align-items:center;
-      color:#fff;text-align:center;transition:opacity 0.8s;
-    }
-    #start_btn{
-      padding:15px 40px;font-size:18px;color:#444;background:#222;
-      border:1px solid #444;border-radius:50px;font-weight:bold;
-      pointer-events:none;transition:all 0.4s ease;text-transform:uppercase;margin-top:20px;
-    }
-    #start_btn.ready{
-      color:#000;background:#00ffff;border-color:#00ffff;
-      box-shadow:0 0 30px rgba(0,255,255,0.6);cursor:pointer;pointer-events:auto;
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      text-align: center;
+      transition: opacity 0.8s;
     }
 
-    #cam_window{
-      position:absolute;bottom:20px;right:20px;width:130px;height:173px;
-      z-index:1000;background:rgba(0,0,0,0.6);
-      border:2px solid rgba(0,255,255,0.5);border-radius:12px;
-      box-shadow:0 0 15px rgba(0,255,255,0.2);
-      overflow:hidden;display:none;
-      backdrop-filter:blur(4px);
-      transition:all 0.3s ease;
+    #start_btn {
+      padding: 15px 40px;
+      font-size: 18px;
+      color: #444;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 50px;
+      font-weight: bold;
+      pointer-events: none;
+      transition: all 0.4s ease;
+      text-transform: uppercase;
+      margin-top: 20px;
     }
-    #hand_canvas{width:100%;height:100%;transform:scaleX(-1);display:block;}
-    #raw_video{display:none;}
 
-    .control-btn{
-      position:absolute;top:20px;width:44px;height:44px;
-      background:rgba(255,255,255,0.15);border-radius:50%;
-      display:flex;justify-content:center;align-items:center;
-      cursor:pointer;z-index:1500;transition:all 0.3s ease;
-      backdrop-filter:blur(2px);border:1px solid rgba(255,255,255,0.1);
+    #start_btn.ready {
+      color: #000;
+      background: #00ffff;
+      border-color: #00ffff;
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+      cursor: pointer;
+      pointer-events: auto;
     }
-    .control-btn:hover{background:rgba(255,255,255,0.3);}
-    .control-btn svg{width:24px;height:24px;fill:rgba(255,255,255,0.9);transition:fill 0.3s ease;}
-    .control-btn.off svg{fill:rgba(255,255,255,0.3);}
-    #cam_toggle{left:20px;}
-    #music_toggle{right:20px;}
 
-    #swipe_hint{
-      position:absolute;top:65%;left:0;width:100%;text-align:center;
-      color:rgba(255,255,255,0.7);pointer-events:none;opacity:0;transition:opacity 0.5s ease;
-      font-size:16px;font-weight:bold;text-shadow:0 0 8px rgba(0,0,0,0.9);z-index:1400;letter-spacing:2px;
-      font-family:'Arial Rounded MT Bold', sans-serif;
+    #cam_window {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 130px;
+      height: 173px;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid rgba(0, 255, 255, 0.5);
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+      overflow: hidden;
+      display: none;
+      backdrop-filter: blur(4px);
+      transition: all 0.3s ease;
+    }
+
+    #hand_canvas {
+      width: 100%;
+      height: 100%;
+      transform: scaleX(-1);
+      display: block;
+    }
+
+    #raw_video {
+      display: none;
+    }
+
+    .control-btn {
+      position: absolute;
+      top: 20px;
+      width: 44px;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 1500;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(2px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .control-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: rgba(255, 255, 255, 0.9);
+      transition: fill 0.3s ease;
+    }
+
+    .control-btn.off svg {
+      fill: rgba(255, 255, 255, 0.3);
+    }
+
+    #cam_toggle {
+      left: 20px;
+    }
+
+    #music_toggle {
+      right: 20px;
+    }
+
+    #swipe_hint {
+      position: absolute;
+      top: 65%;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      font-size: 16px;
+      font-weight: bold;
+      text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+      z-index: 1400;
+      letter-spacing: 2px;
+      font-family: 'Arial Rounded MT Bold', sans-serif;
     }
 
     /* ===== Gift Text Center Layer (猪猪体 + 炫酷) ===== */
-    @font-face{
-      font-family:"ZhuZhuTi";
-      src:url("fonts/zhuzhuti.ttf") format("truetype");
-      font-display:swap;
+    @font-face {
+      font-family: "ZhuZhuTi";
+      src: url("fonts/zhuzhuti.ttf") format("truetype");
+      font-display: swap;
     }
 
-    #gift_text{
-      position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
-      z-index:3000;display:none;pointer-events:none;text-align:center;
-      padding:16px 22px;border-radius:18px;
-      background:rgba(0,0,0,0.35);
-      backdrop-filter:blur(6px);
-      border:1px solid rgba(255,255,255,0.15);
+    #gift_text {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3000;
+      display: none;
+      pointer-events: none;
+      text-align: center;
+      padding: 16px 22px;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
 
-      font-family:"ZhuZhuTi","HanyiSenty","YouYuan","Wawati SC","Comic Sans MS","Microsoft YaHei",sans-serif;
-      font-weight:900;
-      font-size:clamp(26px,5.2vw,48px);
-      letter-spacing:2px;
-      line-height:1.18;
-      max-width:82vw;
+      font-family: "ZhuZhuTi", "HanyiSenty", "YouYuan", "Wawati SC", "Comic Sans MS", "Microsoft YaHei", sans-serif;
+      font-weight: 900;
+      font-size: clamp(26px, 5.2vw, 48px);
+      letter-spacing: 2px;
+      line-height: 1.18;
+      max-width: 82vw;
 
-      color:#fff;
+      color: #fff;
       text-shadow:
         0 0 10px rgba(255, 90, 130, 0.95),
         0 0 22px rgba(0, 255, 255, 0.55),
         0 0 38px rgba(255, 215, 0, 0.55);
 
-      animation:giftTextPop 520ms ease-out forwards, giftTextGlow 1200ms ease-in-out infinite;
-      white-space:normal;
-      word-break:keep-all;
+      animation: giftTextPop 520ms ease-out forwards, giftTextGlow 1200ms ease-in-out infinite;
+      white-space: normal;
+      word-break: keep-all;
     }
 
-    #gift_text::before{
-      content:"";
-      position:absolute;inset:-3px;border-radius:20px;
-      background:conic-gradient(
-        from 0deg,
-        rgba(255, 70, 70, 0.9),
-        rgba(42, 255, 106, 0.8),
-        rgba(255, 215, 0, 0.9),
-        rgba(0, 255, 255, 0.8),
-        rgba(255, 70, 70, 0.9)
-      );
-      filter:blur(10px);
-      opacity:0.55;
-      z-index:-1;
-      animation:ringSpin 1.35s linear infinite;
+    #gift_text::before {
+      content: "";
+      position: absolute;
+      inset: -3px;
+      border-radius: 20px;
+      background: conic-gradient(from 0deg,
+          rgba(255, 70, 70, 0.9),
+          rgba(42, 255, 106, 0.8),
+          rgba(255, 215, 0, 0.9),
+          rgba(0, 255, 255, 0.8),
+          rgba(255, 70, 70, 0.9));
+      filter: blur(10px);
+      opacity: 0.55;
+      z-index: -1;
+      animation: ringSpin 1.35s linear infinite;
     }
 
-    @keyframes ringSpin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-    @keyframes giftTextPop{
-      0%{opacity:0;transform:translate(-50%,-50%) scale(0.65) rotate(-2deg);}
-      70%{opacity:1;transform:translate(-50%,-50%) scale(1.10) rotate(1deg);}
-      100%{opacity:1;transform:translate(-50%,-50%) scale(1.00) rotate(0deg);}
+    @keyframes ringSpin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
-    @keyframes giftTextGlow{
-      0%,100%{filter:drop-shadow(0 0 6px rgba(255,215,0,0.55));}
-      50%{filter:drop-shadow(0 0 16px rgba(0,255,255,0.45));}
+
+    @keyframes giftTextPop {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.65) rotate(-2deg);
+      }
+
+      70% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.10) rotate(1deg);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.00) rotate(0deg);
+      }
+    }
+
+    @keyframes giftTextGlow {
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.55));
+      }
+
+      50% {
+        filter: drop-shadow(0 0 16px rgba(0, 255, 255, 0.45));
+      }
     }
 
     /* ===== Text Spark FX Layer ===== */
-    #gift_fx{
-      position:fixed;inset:0;z-index:2999;pointer-events:none;overflow:hidden;display:none;
+    #gift_fx {
+      position: fixed;
+      inset: 0;
+      z-index: 2999;
+      pointer-events: none;
+      overflow: hidden;
+      display: none;
     }
-    .spark{
-      position:absolute;
-      width:10px;height:10px;border-radius:2px;
-      background:rgba(255,255,255,0.9);
+
+    .spark {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.9);
       box-shadow:
-        0 0 10px rgba(0,255,255,0.7),
-        0 0 18px rgba(255,215,0,0.65),
-        0 0 28px rgba(255,70,70,0.55);
-      transform:translate(-50%,-50%) rotate(0deg);
-      animation:sparkFly 860ms ease-out forwards;
+        0 0 10px rgba(0, 255, 255, 0.7),
+        0 0 18px rgba(255, 215, 0, 0.65),
+        0 0 28px rgba(255, 70, 70, 0.55);
+      transform: translate(-50%, -50%) rotate(0deg);
+      animation: sparkFly 860ms ease-out forwards;
     }
-    @keyframes sparkFly{
-      0%{opacity:0;transform:translate(-50%,-50%) scale(0.8) rotate(0deg);}
-      15%{opacity:1;}
-      100%{opacity:0;transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.1) rotate(260deg);}
+
+    @keyframes sparkFly {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8) rotate(0deg);
+      }
+
+      15% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.1) rotate(260deg);
+      }
     }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
   <script>
-    function activateBtn(){
-      const btn=document.getElementById('start_btn');
-      if(btn){btn.classList.add('ready');btn.innerText='欢迎来到Mia的圣诞树';}
+    function activateBtn() {
+      const btn = document.getElementById('start_btn');
+      if (btn) { btn.classList.add('ready'); btn.innerText = '欢迎来到Mia的圣诞树'; }
     }
-    window.addEventListener('load',()=>setTimeout(activateBtn,1000));
+    window.addEventListener('load', () => setTimeout(activateBtn, 1000));
   </script>
 
   <script type="importmap">
@@ -168,14 +301,24 @@
 
 <body>
   <div id="cam_toggle" class="control-btn" style="display:none;">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="3.2" />
+      <path
+        d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" />
+      <path d="M0 0h24v24H0z" fill="none" />
+    </svg>
   </div>
   <div id="music_toggle" class="control-btn" style="display:none;">
-    <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+    <svg viewBox="0 0 24 24">
+      <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+      <path d="M0 0h24v24H0z" fill="none" />
+    </svg>
   </div>
 
   <div id="overlay">
-    <div style="font-size:2rem;color:#ff69b4;text-shadow:0 0 20px #ff69b4;font-family:'Arial Rounded MT Bold', sans-serif;">Happy Anniversary</div>
+    <div
+      style="font-size:2rem;color:#ff69b4;text-shadow:0 0 20px #ff69b4;font-family:'Arial Rounded MT Bold', sans-serif;">
+      Happy Anniversary</div>
     <div style="color:#888;margin-top:10px;">Gesture Control System Loading...</div>
     <button id="start_btn">LOADING...</button>
   </div>
@@ -266,7 +409,7 @@
     const fireworks = [];
     let handLandmarker = null;
     let lastGesture = 'UNKNOWN';
-    const HAND_CONNECTIONS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
+    const HAND_CONNECTIONS = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], [10, 11], [11, 12], [0, 13], [13, 14], [14, 15], [15, 16], [0, 17], [17, 18], [18, 19], [19, 20], [5, 9], [9, 13], [13, 17]];
 
     const tmpV3a = new THREE.Vector3();
     const tmpV3b = new THREE.Vector3();
@@ -276,12 +419,12 @@
     const giftTextEl = document.getElementById('gift_text');
     const giftFxEl = document.getElementById('gift_fx');
 
-    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
-    function shuffle(arr){
-      for(let i=arr.length-1;i>0;i--){
-        const j=(Math.random()*(i+1))|0;
-        [arr[i],arr[j]]=[arr[j],arr[i]];
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = (Math.random() * (i + 1)) | 0;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
       }
       return arr;
     }
@@ -309,16 +452,16 @@
     ]);
     let giftMsgIndex = 0;
 
-    function showGiftText(msg){
-      if(!giftTextEl) return;
+    function showGiftText(msg) {
+      if (!giftTextEl) return;
       let html = msg;
 
-      if(msg.includes('，')){
+      if (msg.includes('，')) {
         const idx = msg.indexOf('，');
-        html = msg.slice(0, idx+1) + '<br>' + msg.slice(idx+1);
-      }else if(msg.includes(',')){
+        html = msg.slice(0, idx + 1) + '<br>' + msg.slice(idx + 1);
+      } else if (msg.includes(',')) {
         const idx = msg.indexOf(',');
-        html = msg.slice(0, idx+1) + '<br>' + msg.slice(idx+1);
+        html = msg.slice(0, idx + 1) + '<br>' + msg.slice(idx + 1);
       }
 
       giftTextEl.style.display = 'block';
@@ -331,13 +474,13 @@
       spawnTextSparks();
     }
 
-    function hideGiftText(){
-      if(!giftTextEl) return;
+    function hideGiftText() {
+      if (!giftTextEl) return;
       giftTextEl.style.display = 'none';
     }
 
-    function spawnTextSparks(){
-      if(!giftFxEl) return;
+    function spawnTextSparks() {
+      if (!giftFxEl) return;
       giftFxEl.style.display = 'block';
       giftFxEl.innerHTML = "";
 
@@ -345,7 +488,7 @@
       const cy = window.innerHeight * 0.5;
       const count = 22;
 
-      for(let i=0;i<count;i++){
+      for (let i = 0; i < count; i++) {
         const s = document.createElement('div');
         s.className = 'spark';
         s.style.left = cx + 'px';
@@ -365,22 +508,22 @@
         giftFxEl.appendChild(s);
       }
 
-      setTimeout(()=>{
+      setTimeout(() => {
         giftFxEl.innerHTML = "";
         giftFxEl.style.display = 'none';
       }, 950);
     }
 
-    function findInteractiveRoot(obj){
+    function findInteractiveRoot(obj) {
       let cur = obj;
-      while(cur && cur !== scene){
-        if(cur.userData && cur.userData.isInteractive) return cur;
+      while (cur && cur !== scene) {
+        if (cur.userData && cur.userData.isInteractive) return cur;
         cur = cur.parent;
       }
       return null;
     }
 
-    function faceCameraUprightY(obj){
+    function faceCameraUprightY(obj) {
       obj.getWorldPosition(tmpV3a);
       camera.getWorldPosition(tmpV3b);
       const dx = tmpV3b.x - tmpV3a.x;
@@ -391,127 +534,127 @@
       obj.rotation.y = yaw;
     }
 
-    function getFocusPosByDistance(dist){
+    function getFocusPosByDistance(dist) {
       const focusPos = new THREE.Vector3();
       camera.getWorldDirection(focusPos).multiplyScalar(dist).add(camera.position);
       return focusPos;
     }
 
-    function computeSafeDistance(radiusWorld){
+    function computeSafeDistance(radiusWorld) {
       const vFov = THREE.MathUtils.degToRad(camera.fov);
-      const hFov = 2 * Math.atan(Math.tan(vFov/2) * camera.aspect);
+      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
       const minHalfFov = Math.min(vFov, hFov) / 2;
       return (radiusWorld * 2.0) / Math.tan(minHalfFov) + radiusWorld * 0.8;
     }
 
-    function alignLocalCenterToWorldPoint(obj, localCenter, worldTarget){
+    function alignLocalCenterToWorldPoint(obj, localCenter, worldTarget) {
       const worldCenterNow = obj.localToWorld(localCenter.clone());
       const delta = worldTarget.clone().sub(worldCenterNow);
       obj.position.add(delta);
     }
 
-    function getWorldRadius(obj){
+    function getWorldRadius(obj) {
       tmpBox.setFromObject(obj);
       const size = tmpBox.getSize(tmpV3c);
-      let r = 0.5 * Math.sqrt(size.x*size.x + size.y*size.y + size.z*size.z);
+      let r = 0.5 * Math.sqrt(size.x * size.x + size.y * size.y + size.z * size.z);
       return clamp(r, 2.0, 40.0);
     }
 
-    function getTreeTopWorldPoint(out = new THREE.Vector3()){
+    function getTreeTopWorldPoint(out = new THREE.Vector3()) {
       const box = new THREE.Box3();
-      let has=false;
-      for(const obj of floatingObjects){
-        if(!obj.userData || obj.userData.pickType === 'gift' || obj.userData.isTreeTop) continue;
+      let has = false;
+      for (const obj of floatingObjects) {
+        if (!obj.userData || obj.userData.pickType === 'gift' || obj.userData.isTreeTop) continue;
         box.expandByObject(obj);
-        has=true;
+        has = true;
       }
-      if(!has){
+      if (!has) {
         out.set(controls.target.x, 30, controls.target.z);
         return out;
       }
-      out.set((box.min.x + box.max.x)/2, box.max.y, (box.min.z + box.max.z)/2);
+      out.set((box.min.x + box.max.x) / 2, box.max.y, (box.min.z + box.max.z) / 2);
       return out;
     }
 
-    function snapBottomCenterToWorldPoint(obj, worldPoint){
+    function snapBottomCenterToWorldPoint(obj, worldPoint) {
       const local = obj.userData.bottomCenterLocal;
-      if(!local) return;
+      if (!local) return;
       const worldNow = obj.localToWorld(local.clone());
       const delta = worldPoint.clone().sub(worldNow);
       obj.position.add(delta);
     }
 
     // ===== Stars =====
-    function createGlowTexture(){
-      const canvas = document.createElement('canvas'); canvas.width=32; canvas.height=32;
+    function createGlowTexture() {
+      const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
       const ctx = canvas.getContext('2d');
-      const g = ctx.createRadialGradient(16,16,0,16,16,16);
-      g.addColorStop(0,'rgba(255,255,255,1)');
-      g.addColorStop(1,'rgba(255,255,255,0)');
-      ctx.fillStyle=g;
-      ctx.fillRect(0,0,32,32);
+      const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 32, 32);
       const t = new THREE.CanvasTexture(canvas);
       t.colorSpace = THREE.SRGBColorSpace;
       return t;
     }
 
-    const starsCount=1500;
-    const starsPos=new Float32Array(starsCount*3);
-    const starsColors=new Float32Array(starsCount*3);
-    const colorObj=new THREE.Color();
-    for(let i=0;i<starsCount*3;i++) starsPos[i]=(Math.random()-0.5)*1500;
-    for(let i=0;i<starsCount;i++){
-      const tone=Math.random();
-      if(tone>0.8) colorObj.setHex(0xffd700);
-      else if(tone>0.5) colorObj.setHex(0x88ccff);
+    const starsCount = 1500;
+    const starsPos = new Float32Array(starsCount * 3);
+    const starsColors = new Float32Array(starsCount * 3);
+    const colorObj = new THREE.Color();
+    for (let i = 0; i < starsCount * 3; i++) starsPos[i] = (Math.random() - 0.5) * 1500;
+    for (let i = 0; i < starsCount; i++) {
+      const tone = Math.random();
+      if (tone > 0.8) colorObj.setHex(0xffd700);
+      else if (tone > 0.5) colorObj.setHex(0x88ccff);
       else colorObj.setHex(0xffffff);
-      starsColors[i*3]=colorObj.r; starsColors[i*3+1]=colorObj.g; starsColors[i*3+2]=colorObj.b;
+      starsColors[i * 3] = colorObj.r; starsColors[i * 3 + 1] = colorObj.g; starsColors[i * 3 + 2] = colorObj.b;
     }
-    const starGeo=new THREE.BufferGeometry();
-    starGeo.setAttribute('position', new THREE.BufferAttribute(starsPos,3));
-    starGeo.setAttribute('color', new THREE.BufferAttribute(starsColors,3));
-    const starMat=new THREE.PointsMaterial({
-      size:2.5,
-      map:createGlowTexture(),
-      vertexColors:true,
-      transparent:true,
-      opacity:0.8,
-      blending:THREE.AdditiveBlending
+    const starGeo = new THREE.BufferGeometry();
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
+    starGeo.setAttribute('color', new THREE.BufferAttribute(starsColors, 3));
+    const starMat = new THREE.PointsMaterial({
+      size: 2.5,
+      map: createGlowTexture(),
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending
     });
-    const starMesh=new THREE.Points(starGeo, starMat);
+    const starMesh = new THREE.Points(starGeo, starMat);
     scene.add(starMesh);
 
     // ===== Tree Build =====
-    const TOTAL_LEAVES=600;
-    const TREE_HEIGHT=60;
-    const TREE_RADIUS=20;
+    const TOTAL_LEAVES = 600;
+    const TREE_HEIGHT = 60;
+    const TREE_RADIUS = 20;
 
-    const photoFiles=[];
-    for(let i=0;i<=61;i++) photoFiles.push(i===0?'photos/A.jpg':`photos/A (${i}).jpg`);
-    const leafList=[...photoFiles];
-    while(leafList.length<TOTAL_LEAVES) leafList.push(photoFiles[(Math.random()*photoFiles.length)|0]);
-    leafList.sort(()=>Math.random()-0.5);
+    const photoFiles = [];
+    for (let i = 0; i <= 61; i++) photoFiles.push(i === 0 ? 'photos/A.jpg' : `photos/A (${i}).jpg`);
+    const leafList = [...photoFiles];
+    while (leafList.length < TOTAL_LEAVES) leafList.push(photoFiles[(Math.random() * photoFiles.length) | 0]);
+    leafList.sort(() => Math.random() - 0.5);
 
-    function loadCompressedTexture(url, callback){
-      const image=new Image();
-      image.src=url;
-      image.crossOrigin="Anonymous";
-      image.onload=()=>{
-        const canvas=document.createElement('canvas');
-        const maxSize=256;
-        let width=image.width, height=image.height;
-        if(width>height){ if(width>maxSize){ height*=maxSize/width; width=maxSize; } }
-        else { if(height>maxSize){ width*=maxSize/height; height=maxSize; } }
-        canvas.width=width; canvas.height=height;
-        const ctx=canvas.getContext('2d');
-        ctx.drawImage(image,0,0,width,height);
-        const texture=new THREE.CanvasTexture(canvas);
-        texture.colorSpace=THREE.SRGBColorSpace;
+    function loadCompressedTexture(url, callback) {
+      const image = new Image();
+      image.src = url;
+      image.crossOrigin = "Anonymous";
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxSize = 256;
+        let width = image.width, height = image.height;
+        if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } }
+        else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } }
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0, width, height);
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
         callback(texture);
       };
     }
 
-    function setupOrbitalData(mesh, scaleFactor, photoUrl){
+    function setupOrbitalData(mesh, scaleFactor, photoUrl) {
       mesh.userData.originPos = mesh.position.clone();
       mesh.userData.originRot = mesh.rotation.clone();
       mesh.userData.originScale = mesh.scale.clone();
@@ -521,16 +664,16 @@
       mesh.userData.orbitSpeed = 0.001 + Math.random() * 0.002;
       mesh.userData.explodedScale = mesh.scale.clone().multiplyScalar(scaleFactor);
       mesh.userData.isExplodedVisible = mesh.type === 'Group' ? true : (Math.random() < 0.25);
-      mesh.userData.floatSpeed = { x:(Math.random()-0.5)*0.01, y:(Math.random()-0.5)*0.01, z:0 };
+      mesh.userData.floatSpeed = { x: (Math.random() - 0.5) * 0.01, y: (Math.random() - 0.5) * 0.01, z: 0 };
       mesh.userData.isInteractive = true;
       mesh.userData.pinned = false;
       mesh.userData.pinnedDist = null;
-      mesh.userData.pinnedRot = new THREE.Euler(0,0,0);
-      mesh.userData.localCenter = new THREE.Vector3(0,0,0);
+      mesh.userData.pinnedRot = new THREE.Euler(0, 0, 0);
+      mesh.userData.localCenter = new THREE.Vector3(0, 0, 0);
       mesh.userData.inspectionPos = new THREE.Vector3();
       mesh.userData.inspectionBaseScale = 3.0;
       mesh.userData.currentInspectionScale = 3.0;
-      mesh.userData.pickType = (mesh.type==='Group') ? 'gift' : (mesh.geometry && mesh.geometry.type==='PlaneGeometry') ? 'photo' : 'other';
+      mesh.userData.pickType = (mesh.type === 'Group') ? 'gift' : (mesh.geometry && mesh.geometry.type === 'PlaneGeometry') ? 'photo' : 'other';
       mesh.userData.isTreeTop = false;
       mesh.userData.bottomCenterLocal = null;
       mesh.userData.yawOffset = 0;
@@ -539,8 +682,8 @@
 
       floatingObjects.push(mesh);
 
-      if(mesh.userData.pickType==='photo' && photoUrl){
-        if(!seenPhotoUrls.has(photoUrl)){
+      if (mesh.userData.pickType === 'photo' && photoUrl) {
+        if (!seenPhotoUrls.has(photoUrl)) {
           seenPhotoUrls.add(photoUrl);
           uniquePhotoPlaylist.push(mesh);
         }
@@ -548,8 +691,8 @@
     }
 
     // A. Photos
-    leafList.forEach((file, i)=>{
-      loadCompressedTexture(file, (texture)=>{
+    leafList.forEach((file, i) => {
+      loadCompressedTexture(file, (texture) => {
         const imgAspect = texture.image.width / texture.image.height;
         const baseSize = 3;
         let w = imgAspect > 1 ? baseSize * imgAspect : baseSize;
@@ -557,7 +700,7 @@
 
         const mesh = new THREE.Mesh(
           new THREE.PlaneGeometry(w, h),
-          new THREE.MeshBasicMaterial({ map:texture, side:THREE.DoubleSide, transparent:true })
+          new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true })
         );
 
         const h_norm = Math.pow(i / TOTAL_LEAVES, 0.5);
@@ -565,81 +708,81 @@
         const r = (TREE_RADIUS * h_norm) + (Math.random() * 5);
         const theta = Math.random() * Math.PI * 2;
 
-        mesh.position.set(r*Math.cos(theta), y, r*Math.sin(theta));
+        mesh.position.set(r * Math.cos(theta), y, r * Math.sin(theta));
         mesh.lookAt(0, y, 0);
-        mesh.rotateX(-Math.PI/2);
-        mesh.rotateX(-(Math.random()*0.5 + 0.3));
-        mesh.rotateY((Math.random()-0.5)*0.5);
-        mesh.rotateZ(Math.PI + (Math.random()-0.5)*0.5);
+        mesh.rotateX(-Math.PI / 2);
+        mesh.rotateX(-(Math.random() * 0.5 + 0.3));
+        mesh.rotateY((Math.random() - 0.5) * 0.5);
+        mesh.rotateZ(Math.PI + (Math.random() - 0.5) * 0.5);
 
         setupOrbitalData(mesh, 3.0, file);
         mesh.userData.inspectionBaseScale = 1.5;
         mesh.userData.currentInspectionScale = 1.5;
-        mesh.userData.localCenter.set(0,0,0);
+        mesh.userData.localCenter.set(0, 0, 0);
 
         treeRoot.add(mesh);
       });
     });
 
     // B. Spheres
-    const colors=[0xDC143C,0xFFD700,0x228B22,0xE0E0E0];
-    const baseSphereGeo=new THREE.SphereGeometry(0.3,32,32);
-    const sphereCount=450;
-    for(let i=0;i<sphereCount;i++){
+    const colors = [0xDC143C, 0xFFD700, 0x228B22, 0xE0E0E0];
+    const baseSphereGeo = new THREE.SphereGeometry(0.3, 32, 32);
+    const sphereCount = 450;
+    for (let i = 0; i < sphereCount; i++) {
       const sphere = new THREE.Mesh(
         baseSphereGeo,
-        new THREE.MeshStandardMaterial({ color:colors[(Math.random()*colors.length)|0], metalness:0.7, roughness:0.35, envMapIntensity:1.0 })
+        new THREE.MeshStandardMaterial({ color: colors[(Math.random() * colors.length) | 0], metalness: 0.7, roughness: 0.35, envMapIntensity: 1.0 })
       );
-      const scale = Math.random()*1.2 + 0.8;
+      const scale = Math.random() * 1.2 + 0.8;
       sphere.scale.set(scale, scale, scale);
 
       const h_norm = Math.pow(i / sphereCount, 0.7);
-      const y = (TREE_HEIGHT/2) - (h_norm*TREE_HEIGHT);
-      const r = (TREE_RADIUS*h_norm) + (Math.random()-0.5)*4;
-      const theta = Math.random()*Math.PI*2;
-      sphere.position.set(r*Math.cos(theta), y, r*Math.sin(theta));
+      const y = (TREE_HEIGHT / 2) - (h_norm * TREE_HEIGHT);
+      const r = (TREE_RADIUS * h_norm) + (Math.random() - 0.5) * 4;
+      const theta = Math.random() * Math.PI * 2;
+      sphere.position.set(r * Math.cos(theta), y, r * Math.sin(theta));
 
       setupOrbitalData(sphere, 2.5);
-      sphere.userData.localCenter.set(0,0,0);
+      sphere.userData.localCenter.set(0, 0, 0);
       treeRoot.add(sphere);
     }
 
     // ===== C. Clawhauser =====
     const gltfLoader = new GLTFLoader();
 
-    function createCuteTextSprite(message){
-      const canvas=document.createElement('canvas');
-      const ctx=canvas.getContext('2d');
-      canvas.width=1024; canvas.height=256;
+    function createCuteTextSprite(message) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 1024; canvas.height = 256;
       ctx.font = `bold 60px "YouYuan", "Wawati SC", "HanyiSenty", "Comic Sans MS", "Microsoft YaHei", sans-serif`;
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.strokeStyle='white'; ctx.lineWidth=8;
-      ctx.strokeText(message, canvas.width/2, canvas.height/2);
-      ctx.fillStyle='#FF69B4';
-      ctx.fillText(message, canvas.width/2, canvas.height/2);
-      const texture=new THREE.CanvasTexture(canvas);
-      texture.colorSpace=THREE.SRGBColorSpace;
-      const sprite=new THREE.Sprite(new THREE.SpriteMaterial({ map:texture, transparent:true }));
-      sprite.scale.set(12,3,1);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.strokeStyle = 'white'; ctx.lineWidth = 8;
+      ctx.strokeText(message, canvas.width / 2, canvas.height / 2);
+      ctx.fillStyle = '#FF69B4';
+      ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+      sprite.scale.set(12, 3, 1);
       return sprite;
     }
 
-    function loadClawhauserGLB(url){
-      gltfLoader.load(url, (gltf)=>{
+    function loadClawhauserGLB(url) {
+      gltfLoader.load(url, (gltf) => {
         const model = gltf.scene;
         const root = new THREE.Group();
         root.add(model);
-        model.scale.set(10,10,10);
-        model.rotation.set(-THREE.MathUtils.degToRad(20), 0, Math.PI/2);
-        model.traverse((child)=>{ if(child.isMesh){ child.castShadow=true; child.receiveShadow=true; } });
+        model.scale.set(10, 10, 10);
+        model.rotation.set(-THREE.MathUtils.degToRad(20), 0, Math.PI / 2);
+        model.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
 
-        root.position.set(0, TREE_HEIGHT/2, 0);
+        root.position.set(0, TREE_HEIGHT / 2, 0);
         setupOrbitalData(root, 2.0);
         root.userData.isExplodedVisible = true;
         root.userData.isTreeTop = true;
         root.userData.yawOffset = -THREE.MathUtils.degToRad(18);
         root.userData.orbitRadius = 80;
-        root.userData.orbitY = TREE_HEIGHT/2 + 10;
+        root.userData.orbitY = TREE_HEIGHT / 2 + 10;
         root.userData.treeFacingSet = false;
 
         treeRoot.add(root);
@@ -647,49 +790,49 @@
 
         const b = new THREE.Box3().setFromObject(root);
         const center = new THREE.Vector3(); b.getCenter(center);
-        const bottomCenterWorld = new THREE.Vector3((b.min.x+b.max.x)/2, b.min.y, (b.min.z+b.max.z)/2);
+        const bottomCenterWorld = new THREE.Vector3((b.min.x + b.max.x) / 2, b.min.y, (b.min.z + b.max.z) / 2);
         root.userData.bottomCenterLocal = root.worldToLocal(bottomCenterWorld.clone());
         root.userData.localCenter.copy(root.worldToLocal(center.clone()));
 
         const hitGeo = new THREE.BoxGeometry(0.5, 0.6, 0.4);
         const hitMat = new THREE.MeshBasicMaterial({
-          visible:true,
-          transparent:true,
+          visible: true,
+          transparent: true,
           opacity: DEBUG_HITBOX ? 0.5 : 0.0,
-          depthWrite:false,
-          side:THREE.DoubleSide
+          depthWrite: false,
+          side: THREE.DoubleSide
         });
         const chestHitbox = new THREE.Mesh(hitGeo, hitMat);
-        chestHitbox.position.set(0,1.3,0.4);
-        chestHitbox.name="ChestHitbox";
-        chestHitbox.userData.isHitbox=true;
+        chestHitbox.position.set(0, 1.3, 0.4);
+        chestHitbox.name = "ChestHitbox";
+        chestHitbox.userData.isHitbox = true;
         model.add(chestHitbox);
 
         const textSprite = createCuteTextSprite("老婆，两周年结婚快乐");
-        textSprite.position.set(0,13.0,0);
-        textSprite.visible=false;
-        textSprite.name="AnniversaryText";
+        textSprite.position.set(0, 13.0, 0);
+        textSprite.visible = false;
+        textSprite.name = "AnniversaryText";
         root.add(textSprite);
-      }, undefined, (err)=>console.log("GLB error", err));
+      }, undefined, (err) => console.log("GLB error", err));
     }
     loadClawhauserGLB('clawhauser.glb');
 
     // ===== D. Gift Boxes =====
-    const giftFiles=['giftbox1.glb','giftbox2.glb','giftbox3.glb','giftbox4.glb','giftbox5.glb'];
-    const loadedModels={};
-    let loadCount=0;
-    giftFiles.forEach(fileName=>{
-      gltfLoader.load(fileName, (gltf)=>{ loadedModels[fileName]=gltf.scene; checkLoadFinish(); },
-        undefined, ()=>{ console.warn(fileName+" 加载失败"); checkLoadFinish(); });
+    const giftFiles = ['giftbox1.glb', 'giftbox2.glb', 'giftbox3.glb', 'giftbox4.glb', 'giftbox5.glb'];
+    const loadedModels = {};
+    let loadCount = 0;
+    giftFiles.forEach(fileName => {
+      gltfLoader.load(fileName, (gltf) => { loadedModels[fileName] = gltf.scene; checkLoadFinish(); },
+        undefined, () => { console.warn(fileName + " 加载失败"); checkLoadFinish(); });
     });
-    function checkLoadFinish(){ loadCount++; if(loadCount===giftFiles.length) spawnFixedBoxes(); }
+    function checkLoadFinish() { loadCount++; if (loadCount === giftFiles.length) spawnFixedBoxes(); }
 
-    function spawnFixedBoxes(){
-      FIXED_LAYOUT.forEach(data=>{
-        const template = loadedModels[data.name]; if(!template) return;
+    function spawnFixedBoxes() {
+      FIXED_LAYOUT.forEach(data => {
+        const template = loadedModels[data.name]; if (!template) return;
 
         const clone = template.clone(true);
-        clone.scale.set(15.0,15.0,15.0);
+        clone.scale.set(15.0, 15.0, 15.0);
 
         const box3 = new THREE.Box3().setFromObject(clone);
         const yOffset = -box3.min.y;
@@ -701,11 +844,11 @@
         group.position.set(data.pos[0], data.pos[1], data.pos[2]);
         group.rotation.y = data.rot;
 
-        group.traverse((child)=>{ if(child.isMesh){ child.castShadow=true; child.receiveShadow=true; } });
+        group.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
 
         scene.add(group);
         setupOrbitalData(group, 1.5);
-        group.userData.orbitY = (Math.random()-0.5)*40 - 40;
+        group.userData.orbitY = (Math.random() - 0.5) * 40 - 40;
         group.userData.isExplodedVisible = true;
         group.userData.pickType = 'gift';
 
@@ -721,10 +864,10 @@
     }
 
     // ===== E. Light Strip =====
-    function createLightStrip(){
+    function createLightStrip() {
       const lightStripGroup = new THREE.Group();
-      const stripBottomY = -TREE_HEIGHT/2 + 2;
-      const stripTopY = TREE_HEIGHT/2 - 5;
+      const stripBottomY = -TREE_HEIGHT / 2 + 2;
+      const stripTopY = TREE_HEIGHT / 2 - 5;
       const stripHeight = stripTopY - stripBottomY;
       const radiusBottom = TREE_RADIUS + 2;
       const radiusTop = 4;
@@ -733,24 +876,24 @@
 
       const bulbGeo = new THREE.SphereGeometry(isMobile ? 0.1 : 0.15, 8, 8);
 
-      for(let i=0;i<lightCount;i++){
-        const t = i/(lightCount-1);
-        const angle = t*turns*Math.PI*2;
-        const currentRadius = radiusBottom*(1-t) + radiusTop*t;
-        const y = stripBottomY + t*stripHeight;
-        const x = Math.cos(angle)*currentRadius;
-        const z = Math.sin(angle)*currentRadius;
+      for (let i = 0; i < lightCount; i++) {
+        const t = i / (lightCount - 1);
+        const angle = t * turns * Math.PI * 2;
+        const currentRadius = radiusBottom * (1 - t) + radiusTop * t;
+        const y = stripBottomY + t * stripHeight;
+        const x = Math.cos(angle) * currentRadius;
+        const z = Math.sin(angle) * currentRadius;
 
         const bulbMat = new THREE.MeshStandardMaterial({
-          color:0xffdd88,
-          emissive:0xffaa00,
-          emissiveIntensity:2.0,
-          roughness:0.3
+          color: 0xffdd88,
+          emissive: 0xffaa00,
+          emissiveIntensity: 2.0,
+          roughness: 0.3
         });
 
         const bulb = new THREE.Mesh(bulbGeo, bulbMat);
-        bulb.position.set(x,y,z);
-        bulb.userData.blinkOffset = Math.random()*100;
+        bulb.position.set(x, y, z);
+        bulb.userData.blinkOffset = Math.random() * 100;
         lightStripGroup.add(bulb);
         lightBulbs.push(bulb);
       }
@@ -762,39 +905,39 @@
       setupOrbitalData(lightStripGroup, 0.0001);
       lightStripGroup.userData.isExplodedVisible = false;
       lightStripGroup.userData.pickType = 'other';
-      lightStripGroup.userData.localCenter.set(0,0,0);
+      lightStripGroup.userData.localCenter.set(0, 0, 0);
     }
     createLightStrip();
 
     // ===== Fireworks =====
-    function createFirework(){
+    function createFirework() {
       const particleCount = 150;
       const geometry = new THREE.BufferGeometry();
-      const positions = new Float32Array(particleCount*3);
-      const colors = new Float32Array(particleCount*3);
+      const positions = new Float32Array(particleCount * 3);
+      const colors = new Float32Array(particleCount * 3);
       const velocities = [];
       const fireworkColor = new THREE.Color().setHSL(Math.random(), 1.0, 0.6);
 
-      for(let i=0;i<particleCount;i++){
-        positions[i*3]=0; positions[i*3+1]=40; positions[i*3+2]=0;
-        colors[i*3]=fireworkColor.r; colors[i*3+1]=fireworkColor.g; colors[i*3+2]=fireworkColor.b;
+      for (let i = 0; i < particleCount; i++) {
+        positions[i * 3] = 0; positions[i * 3 + 1] = 40; positions[i * 3 + 2] = 0;
+        colors[i * 3] = fireworkColor.r; colors[i * 3 + 1] = fireworkColor.g; colors[i * 3 + 2] = fireworkColor.b;
 
-        const v = new THREE.Vector3((Math.random()-0.5),(Math.random()-0.5),(Math.random()-0.5));
-        v.normalize().multiplyScalar(1.0 + Math.random()*2.0);
+        const v = new THREE.Vector3((Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5));
+        v.normalize().multiplyScalar(1.0 + Math.random() * 2.0);
         velocities.push(v);
       }
 
-      geometry.setAttribute('position', new THREE.BufferAttribute(positions,3));
-      geometry.setAttribute('color', new THREE.BufferAttribute(colors,3));
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
       const material = new THREE.PointsMaterial({
-        size:2.0,
-        vertexColors:true,
-        blending:THREE.AdditiveBlending,
-        transparent:true,
-        opacity:1.0,
-        map:createGlowTexture(),
-        depthWrite:false
+        size: 2.0,
+        vertexColors: true,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        opacity: 1.0,
+        map: createGlowTexture(),
+        depthWrite: false
       });
 
       const ps = new THREE.Points(geometry, material);
@@ -804,27 +947,27 @@
       fireworks.push(ps);
     }
 
-    function updateFireworks(){
-      for(let i=fireworks.length-1;i>=0;i--){
+    function updateFireworks() {
+      for (let i = fireworks.length - 1; i >= 0; i--) {
         const f = fireworks[i];
         const positions = f.geometry.attributes.position.array;
         const velocities = f.userData.velocities;
         f.userData.life -= 0.015;
         f.material.opacity = f.userData.life;
 
-        for(let j=0;j<velocities.length;j++){
+        for (let j = 0; j < velocities.length; j++) {
           velocities[j].y -= 0.03;
-          positions[j*3] += velocities[j].x;
-          positions[j*3+1] += velocities[j].y;
-          positions[j*3+2] += velocities[j].z;
+          positions[j * 3] += velocities[j].x;
+          positions[j * 3 + 1] += velocities[j].y;
+          positions[j * 3 + 2] += velocities[j].z;
         }
         f.geometry.attributes.position.needsUpdate = true;
 
-        if(f.userData.life <= 0){
+        if (f.userData.life <= 0) {
           scene.remove(f);
           f.geometry.dispose();
           f.material.dispose();
-          fireworks.splice(i,1);
+          fireworks.splice(i, 1);
         }
       }
     }
@@ -832,62 +975,67 @@
     // ===== Confetti (真正纸片爆开) =====
     const confettis = [];
 
-    function createConfettiBurst(worldPos, durationMs = 1400){
-      const count = 160;
-      const pieceW = 1.2, pieceH = 0.55;
+    function createConfettiBurst(worldPos, durationMs = 1400) {
+      const count = 220;                 // 多一点更明显
+      const pieceW = 2.2, pieceH = 1.0;  // 纸片更大（你场景单位很大）
       const geo = new THREE.PlaneGeometry(pieceW, pieceH);
 
       const mat = new THREE.MeshBasicMaterial({
-        transparent:true,
-        opacity:1.0,
-        side:THREE.DoubleSide,
-        depthWrite:false
+        transparent: true,
+        opacity: 1.0,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        depthTest: false,     // ✅更容易看见（不被遮挡）
+        vertexColors: true    // ✅关键：吃 instanceColor
       });
 
       const mesh = new THREE.InstancedMesh(geo, mat, count);
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      mesh.frustumCulled = false;        // ✅关键：不被视锥裁剪掉
 
-      const colors = new Float32Array(count*3);
+      const colors = new Float32Array(count * 3);
       const palette = [
         new THREE.Color(0xff2b2b),
         new THREE.Color(0x2aff6a),
         new THREE.Color(0xffd700),
-        new THREE.Color(0xffffff)
+        new THREE.Color(0xffffff),
+        new THREE.Color(0x00ffff)
       ];
 
-      const velocities=[];
-      const angVel=[];
-      const positions=[];
-      const rotations=[];
-      const scales=[];
-      const dummy=new THREE.Object3D();
+      const velocities = [];
+      const angVel = [];
+      const positions = [];
+      const rotations = [];
+      const scales = [];
+      const dummy = new THREE.Object3D();
 
-      for(let i=0;i<count;i++){
+      for (let i = 0; i < count; i++) {
+        // ✅用世界坐标（mesh 本身放 scene 下，不做 transform，所以没问题）
         const p = new THREE.Vector3(
-          worldPos.x + (Math.random()-0.5)*1.0,
-          worldPos.y + (Math.random()-0.5)*1.0,
-          worldPos.z + (Math.random()-0.5)*1.0
+          worldPos.x + (Math.random() - 0.5) * 2.0,
+          worldPos.y + (Math.random() - 0.5) * 2.0,
+          worldPos.z + (Math.random() - 0.5) * 2.0
         );
 
         const v = new THREE.Vector3(
-          (Math.random()-0.5)*2.8,
-          (Math.random()*2.4 + 1.2)*2.0,
-          (Math.random()-0.5)*2.8
+          (Math.random() - 0.5) * 6.0,
+          (Math.random() * 6.0 + 6.0),
+          (Math.random() - 0.5) * 6.0
         );
 
         const r = new THREE.Euler(
-          Math.random()*Math.PI,
-          Math.random()*Math.PI,
-          Math.random()*Math.PI
+          Math.random() * Math.PI,
+          Math.random() * Math.PI,
+          Math.random() * Math.PI
         );
 
         const av = new THREE.Vector3(
-          (Math.random()-0.5)*0.22,
-          (Math.random()-0.5)*0.22,
-          (Math.random()-0.5)*0.22
+          (Math.random() - 0.5) * 0.35,
+          (Math.random() - 0.5) * 0.35,
+          (Math.random() - 0.5) * 0.35
         );
 
-        const s = 0.65 + Math.random()*0.75;
+        const s = 0.8 + Math.random() * 1.2;
 
         positions.push(p);
         velocities.push(v);
@@ -895,12 +1043,14 @@
         angVel.push(av);
         scales.push(s);
 
-        const c = palette[(Math.random()*palette.length)|0];
-        colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+        const c = palette[(Math.random() * palette.length) | 0];
+        colors[i * 3] = c.r;
+        colors[i * 3 + 1] = c.g;
+        colors[i * 3 + 2] = c.b;
 
         dummy.position.copy(p);
         dummy.rotation.copy(r);
-        dummy.scale.set(s,s,s);
+        dummy.scale.set(s, s, s);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
       }
@@ -910,25 +1060,33 @@
       mesh.userData = {
         life: durationMs / 16.67,
         maxLife: durationMs / 16.67,
-        positions, velocities, rotations, angVel, scales, dummy
+        positions,
+        velocities,
+        rotations,
+        angVel,
+        scales,
+        dummy
       };
 
       scene.add(mesh);
       confettis.push(mesh);
     }
 
-    function updateConfettis(){
-      for(let k=confettis.length-1;k>=0;k--){
+
+    function updateConfettis() {
+      for (let k = confettis.length - 1; k >= 0; k--) {
         const mesh = confettis[k];
         const ud = mesh.userData;
 
         ud.life -= 1;
         const t = Math.max(0, ud.life / ud.maxLife);
+
         mesh.material.opacity = t;
 
-        const gravity = -0.09;
+        const gravity = -0.22;   // ✅更明显的下落
+        const drag = 0.975;      // ✅阻力稍大一点
 
-        for(let i=0;i<ud.positions.length;i++){
+        for (let i = 0; i < ud.positions.length; i++) {
           const p = ud.positions[i];
           const v = ud.velocities[i];
           const r = ud.rotations[i];
@@ -936,8 +1094,7 @@
           const s = ud.scales[i];
 
           v.y += gravity;
-          v.multiplyScalar(0.985);
-
+          v.multiplyScalar(drag);
           p.add(v);
 
           r.x += av.x;
@@ -946,26 +1103,28 @@
 
           ud.dummy.position.copy(p);
           ud.dummy.rotation.copy(r);
-          ud.dummy.scale.set(s,s,s);
+          ud.dummy.scale.set(s, s, s);
           ud.dummy.updateMatrix();
           mesh.setMatrixAt(i, ud.dummy.matrix);
         }
+
         mesh.instanceMatrix.needsUpdate = true;
 
-        if(ud.life <= 0){
+        if (ud.life <= 0) {
           scene.remove(mesh);
           mesh.geometry.dispose();
           mesh.material.dispose();
-          confettis.splice(k,1);
+          confettis.splice(k, 1);
         }
       }
     }
+
 
     // ===== System Start =====
     const musicUrl = 'https://raw.githubusercontent.com/sun857979566-creator/christmas-tree/main/just%20love%20u.mp3';
     let sound = null;
 
-    function initMusic(){
+    function initMusic() {
       const listener = new THREE.AudioListener();
       camera.add(listener);
       sound = new THREE.Audio(listener);
@@ -973,13 +1132,13 @@
       const musicBtn = document.getElementById('music_toggle');
       musicBtn.classList.add('off');
 
-      audioLoader.load(musicUrl, (buffer)=>{
+      audioLoader.load(musicUrl, (buffer) => {
         sound.setBuffer(buffer);
         sound.setLoop(true);
         sound.setVolume(0.5);
         sound.play();
         musicBtn.classList.remove('off');
-      }, undefined, (err)=>console.error("音乐加载失败", err));
+      }, undefined, (err) => console.error("音乐加载失败", err));
     }
 
     const startBtn = document.getElementById('start_btn');
@@ -989,334 +1148,335 @@
     const canvasCtx = canvasElement.getContext('2d');
     const camWindow = document.getElementById('cam_window');
 
-    startBtn.onclick = async ()=>{
-      if(startBtn.innerText === 'LOADING...') return;
-      try{
+    startBtn.onclick = async () => {
+      if (startBtn.innerText === 'LOADING...') return;
+      try {
         const audioCtx = THREE.AudioContext.getContext();
-        if(audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         startBtn.innerText = 'INITIALIZING...';
         initMusic();
 
-        const hands = new Hands({ locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}` });
-        hands.setOptions({ maxNumHands:1, modelComplexity:1, minDetectionConfidence:0.5, minTrackingConfidence:0.5 });
+        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}` });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
         hands.onResults(onAIResults);
         handLandmarker = hands;
 
-        const stream = await navigator.mediaDevices.getUserMedia({ audio:false, video:{ facingMode:"user", width:320, height:240 } });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user", width: 320, height: 240 } });
         videoElement.srcObject = stream;
-        videoElement.onloadedmetadata = ()=>{
+        videoElement.onloadedmetadata = () => {
           videoElement.play();
-          overlay.style.opacity='0';
-          setTimeout(()=>{ overlay.style.display='none'; }, 800);
-          camWindow.style.display='block';
+          overlay.style.opacity = '0';
+          setTimeout(() => { overlay.style.display = 'none'; }, 800);
+          camWindow.style.display = 'block';
           document.getElementById('cam_toggle').classList.remove('off');
-          document.getElementById('cam_toggle').style.display='flex';
-          document.getElementById('music_toggle').style.display='flex';
+          document.getElementById('cam_toggle').style.display = 'flex';
+          document.getElementById('music_toggle').style.display = 'flex';
           canvasElement.width = videoElement.videoWidth;
           canvasElement.height = videoElement.videoHeight;
           processVideoFrame();
         };
-      }catch(e){
+      } catch (e) {
         console.warn("启动摄像头失败，进入无摄像头调试模式:", e);
-        startBtn.innerText='NO CAMERA MODE';
-        setTimeout(()=>{
-          overlay.style.opacity='0';
-          setTimeout(()=>{ overlay.style.display='none'; }, 800);
-          camWindow.style.display='none';
-          document.getElementById('cam_toggle').style.display='none';
-          document.getElementById('music_toggle').style.display='flex';
+        startBtn.innerText = 'NO CAMERA MODE';
+        setTimeout(() => {
+          overlay.style.opacity = '0';
+          setTimeout(() => { overlay.style.display = 'none'; }, 800);
+          camWindow.style.display = 'none';
+          document.getElementById('cam_toggle').style.display = 'none';
+          document.getElementById('music_toggle').style.display = 'flex';
         }, 500);
       }
     };
 
-    async function processVideoFrame(){
-      if(handLandmarker && videoElement.readyState >= 2){
+    async function processVideoFrame() {
+      if (handLandmarker && videoElement.readyState >= 2) {
         await handLandmarker.send({ image: videoElement });
       }
       requestAnimationFrame(processVideoFrame);
     }
 
-    function detectGesture(landmarks){
+    function detectGesture(landmarks) {
       const wrist = landmarks[0];
-      const fingertips=[8,12,16,20];
-      let foldedCount=0;
-      fingertips.forEach(idx=>{
+      const fingertips = [8, 12, 16, 20];
+      let foldedCount = 0;
+      fingertips.forEach(idx => {
         const tip = landmarks[idx];
-        const dist = Math.sqrt((tip.x-wrist.x)**2 + (tip.y-wrist.y)**2);
-        if(dist < 0.15) foldedCount++;
+        const dist = Math.sqrt((tip.x - wrist.x) ** 2 + (tip.y - wrist.y) ** 2);
+        if (dist < 0.15) foldedCount++;
       });
-      if(foldedCount>=3) return 'FIST';
-      if(foldedCount===0) return 'OPEN';
+      if (foldedCount >= 3) return 'FIST';
+      if (foldedCount === 0) return 'OPEN';
       return 'BETWEEN';
     }
 
-    function onAIResults(results){
-      canvasCtx.clearRect(0,0,canvasElement.width,canvasElement.height);
-      canvasCtx.drawImage(results.image, 0,0,canvasElement.width,canvasElement.height);
+    function onAIResults(results) {
+      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-      if(results.multiHandLandmarks && results.multiHandLandmarks.length>0){
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
         const landmarks = results.multiHandLandmarks[0];
-        canvasCtx.lineWidth=2;
-        canvasCtx.strokeStyle='#FFFF00';
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = '#FFFF00';
 
-        for(const [start,end] of HAND_CONNECTIONS){
-          const p1=landmarks[start], p2=landmarks[end];
+        for (const [start, end] of HAND_CONNECTIONS) {
+          const p1 = landmarks[start], p2 = landmarks[end];
           canvasCtx.beginPath();
-          canvasCtx.moveTo(p1.x*canvasElement.width, p1.y*canvasElement.height);
-          canvasCtx.lineTo(p2.x*canvasElement.width, p2.y*canvasElement.height);
+          canvasCtx.moveTo(p1.x * canvasElement.width, p1.y * canvasElement.height);
+          canvasCtx.lineTo(p2.x * canvasElement.width, p2.y * canvasElement.height);
           canvasCtx.stroke();
         }
 
-        canvasCtx.fillStyle='#FF0000';
-        for(const lm of landmarks){
+        canvasCtx.fillStyle = '#FF0000';
+        for (const lm of landmarks) {
           canvasCtx.beginPath();
-          canvasCtx.arc(lm.x*canvasElement.width, lm.y*canvasElement.height, 3, 0, 2*Math.PI);
+          canvasCtx.arc(lm.x * canvasElement.width, lm.y * canvasElement.height, 3, 0, 2 * Math.PI);
           canvasCtx.fill();
         }
 
         const currentGesture = detectGesture(landmarks);
-        if(!isExploded && lastGesture==='FIST' && currentGesture==='OPEN'){
-          for(let i=0;i<5;i++) setTimeout(()=>createFirework(), i*200);
+        if (!isExploded && lastGesture === 'FIST' && currentGesture === 'OPEN') {
+          for (let i = 0; i < 5; i++) setTimeout(() => createFirework(), i * 200);
         }
-        if(currentGesture!=='BETWEEN') lastGesture=currentGesture;
+        if (currentGesture !== 'BETWEEN') lastGesture = currentGesture;
       }
     }
 
     // ===== Interaction (touch / swipe) =====
-    let isDraggingCam=false;
-    let camDragStartX=0;
-    let camDragStartY=0;
+    let isDraggingCam = false;
+    let camDragStartX = 0;
+    let camDragStartY = 0;
 
-    camWindow.addEventListener('touchstart', (e)=>{
-      isDraggingCam=true;
+    camWindow.addEventListener('touchstart', (e) => {
+      isDraggingCam = true;
       camDragStartX = e.touches[0].clientX - camWindow.offsetLeft;
       camDragStartY = e.touches[0].clientY - camWindow.offsetTop;
       e.stopPropagation();
-    }, { passive:false });
+    }, { passive: false });
 
-    window.addEventListener('touchmove', (e)=>{
-      if(!isDraggingCam) return;
+    window.addEventListener('touchmove', (e) => {
+      if (!isDraggingCam) return;
       e.preventDefault();
       camWindow.style.left = (e.touches[0].clientX - camDragStartX) + 'px';
-      camWindow.style.top  = (e.touches[0].clientY - camDragStartY) + 'px';
-      camWindow.style.right='auto';
-      camWindow.style.bottom='auto';
-    }, { passive:false });
+      camWindow.style.top = (e.touches[0].clientY - camDragStartY) + 'px';
+      camWindow.style.right = 'auto';
+      camWindow.style.bottom = 'auto';
+    }, { passive: false });
 
-    window.addEventListener('touchend', ()=>{ isDraggingCam=false; });
+    window.addEventListener('touchend', () => { isDraggingCam = false; });
 
-    window.addEventListener('touchstart', (event)=>{
-      if(isDraggingCam) return;
+    window.addEventListener('touchstart', (event) => {
+      if (isDraggingCam) return;
       touchStartTime = Date.now();
       touchStartPos.set(event.touches[0].clientX, event.touches[0].clientY);
 
-      if(event.touches.length>1){
-        isMultiTouch=true;
-        if(activeUUID){
-          const obj=floatingObjects.find(o=>o.uuid===activeUUID);
-          if(obj && (obj.userData.isTreeTop || obj.userData.pickType==='photo')){
+      if (event.touches.length > 1) {
+        isMultiTouch = true;
+        if (activeUUID) {
+          const obj = floatingObjects.find(o => o.uuid === activeUUID);
+          if (obj && (obj.userData.isTreeTop || obj.userData.pickType === 'photo')) {
             initialPinchDistance = getPinchDistance(event);
             initialScale = obj.userData.currentInspectionScale;
           }
         }
-      }else{
-        isMultiTouch=false;
+      } else {
+        isMultiTouch = false;
       }
-      isDragMove=false;
-    }, { passive:false });
+      isDragMove = false;
+    }, { passive: false });
 
-    function handleSwipe(deltaX){
-      if(!activeUUID) return;
-      const currentObj=floatingObjects.find(o=>o.uuid===activeUUID);
-      if(!currentObj || currentObj.userData.pickType!=='photo') return;
+    function handleSwipe(deltaX) {
+      if (!activeUUID) return;
+      const currentObj = floatingObjects.find(o => o.uuid === activeUUID);
+      if (!currentObj || currentObj.userData.pickType !== 'photo') return;
 
-      const currentUrl=currentObj.userData.photoUrl;
-      let index = uniquePhotoPlaylist.findIndex(p=>p.userData.photoUrl===currentUrl);
-      if(index===-1 && uniquePhotoPlaylist.length>0) index=0;
+      const currentUrl = currentObj.userData.photoUrl;
+      let index = uniquePhotoPlaylist.findIndex(p => p.userData.photoUrl === currentUrl);
+      if (index === -1 && uniquePhotoPlaylist.length > 0) index = 0;
 
-      let newIndex=index;
-      if(deltaX>0) newIndex=(index-1+uniquePhotoPlaylist.length)%uniquePhotoPlaylist.length;
-      else newIndex=(index+1)%uniquePhotoPlaylist.length;
+      let newIndex = index;
+      if (deltaX > 0) newIndex = (index - 1 + uniquePhotoPlaylist.length) % uniquePhotoPlaylist.length;
+      else newIndex = (index + 1) % uniquePhotoPlaylist.length;
 
-      if(newIndex!==index) pinObject(uniquePhotoPlaylist[newIndex]);
+      if (newIndex !== index) pinObject(uniquePhotoPlaylist[newIndex]);
     }
 
-    window.addEventListener('touchmove', (event)=>{
-      if(isDraggingCam) return;
+    window.addEventListener('touchmove', (event) => {
+      if (isDraggingCam) return;
 
-      if(event.touches.length===2){
-        isMultiTouch=true;
-        if(activeUUID && initialPinchDistance>0){
-          const obj=floatingObjects.find(o=>o.uuid===activeUUID);
-          if(obj && (obj.userData.isTreeTop || obj.userData.pickType==='photo')){
-            const currentDistance=getPinchDistance(event);
-            const scaleFactor=currentDistance/initialPinchDistance;
-            const minScale=0.5;
-            const maxScale=obj.userData.isTreeTop?6.0:4.0;
-            obj.userData.currentInspectionScale = clamp(initialScale*scaleFactor, minScale, maxScale);
+      if (event.touches.length === 2) {
+        isMultiTouch = true;
+        if (activeUUID && initialPinchDistance > 0) {
+          const obj = floatingObjects.find(o => o.uuid === activeUUID);
+          if (obj && (obj.userData.isTreeTop || obj.userData.pickType === 'photo')) {
+            const currentDistance = getPinchDistance(event);
+            const scaleFactor = currentDistance / initialPinchDistance;
+            const minScale = 0.5;
+            const maxScale = obj.userData.isTreeTop ? 6.0 : 4.0;
+            obj.userData.currentInspectionScale = clamp(initialScale * scaleFactor, minScale, maxScale);
           }
         }
         event.preventDefault();
         return;
       }
 
-      const dx=event.touches[0].clientX - touchStartPos.x;
-      const dy=event.touches[0].clientY - touchStartPos.y;
+      const dx = event.touches[0].clientX - touchStartPos.x;
+      const dy = event.touches[0].clientY - touchStartPos.y;
 
-      if(activeUUID && floatingObjects.find(o=>o.uuid===activeUUID)?.userData.pickType==='photo'){
-        if(event.touches.length===1 && Math.abs(dx)>30 && Math.abs(dy)<100){
+      if (activeUUID && floatingObjects.find(o => o.uuid === activeUUID)?.userData.pickType === 'photo') {
+        if (event.touches.length === 1 && Math.abs(dx) > 30 && Math.abs(dy) < 100) {
           event.preventDefault();
           event.stopPropagation();
           return;
         }
       }
 
-      if(Math.sqrt(dx*dx + dy*dy) > 10) isDragMove=true;
-    }, { passive:false });
+      if (Math.sqrt(dx * dx + dy * dy) > 10) isDragMove = true;
+    }, { passive: false });
 
-    window.addEventListener('touchend', (event)=>{
-      if(isDraggingCam) return;
+    window.addEventListener('touchend', (event) => {
+      if (isDraggingCam) return;
 
-      if(activeUUID && !isMultiTouch){
-        const activeObj=floatingObjects.find(o=>o.uuid===activeUUID);
-        if(activeObj && activeObj.userData.pickType==='photo'){
-          const dx=event.changedTouches[0].clientX - touchStartPos.x;
-          const dy=event.changedTouches[0].clientY - touchStartPos.y;
-          if(Math.abs(dx)>30 && Math.abs(dy)<100){
+      if (activeUUID && !isMultiTouch) {
+        const activeObj = floatingObjects.find(o => o.uuid === activeUUID);
+        if (activeObj && activeObj.userData.pickType === 'photo') {
+          const dx = event.changedTouches[0].clientX - touchStartPos.x;
+          const dy = event.changedTouches[0].clientY - touchStartPos.y;
+          if (Math.abs(dx) > 30 && Math.abs(dy) < 100) {
             handleSwipe(dx);
-            isDragMove=true;
+            isDragMove = true;
           }
         }
       }
 
-      if(event.touches.length===0){
-        setTimeout(()=>{ isMultiTouch=false; }, 100);
+      if (event.touches.length === 0) {
+        setTimeout(() => { isMultiTouch = false; }, 100);
       }
 
-      const currentTime=new Date().getTime();
-      const tapLength=currentTime - lastTapTime;
-      if(tapLength<300 && tapLength>0){
-        if(event.changedTouches.length===1 && !isDragMove){
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTapTime;
+      if (tapLength < 300 && tapLength > 0) {
+        if (event.changedTouches.length === 1 && !isDragMove) {
           triggerExplosionOrReset();
           event.preventDefault();
         }
       }
-      lastTapTime=currentTime;
+      lastTapTime = currentTime;
     });
 
-    window.addEventListener('pointermove', (event)=>{
-      if(!isInspectionDragging || !activeUUID) return;
-      const obj=floatingObjects.find(o=>o.uuid===activeUUID);
-      if(!obj || !obj.userData.isTreeTop) return;
-      const deltaX=event.clientX - previousMouse.x;
-      const deltaY=event.clientY - previousMouse.y;
-      obj.rotation.y += deltaX*(isMobile?0.008:0.005);
-      obj.rotation.x += deltaY*(isMobile?0.008:0.005);
+    window.addEventListener('pointermove', (event) => {
+      if (!isInspectionDragging || !activeUUID) return;
+      const obj = floatingObjects.find(o => o.uuid === activeUUID);
+      if (!obj || !obj.userData.isTreeTop) return;
+      const deltaX = event.clientX - previousMouse.x;
+      const deltaY = event.clientY - previousMouse.y;
+      obj.rotation.y += deltaX * (isMobile ? 0.008 : 0.005);
+      obj.rotation.x += deltaY * (isMobile ? 0.008 : 0.005);
       previousMouse.set(event.clientX, event.clientY);
     });
 
-    window.addEventListener('pointerdown', (event)=>{
+    window.addEventListener('pointerdown', (event) => {
+      isDragMove = false; // ✅关键：每次按下都重置
       previousMouse.set(event.clientX, event.clientY);
-      if(activeUUID){
-        const obj=floatingObjects.find(o=>o.uuid===activeUUID);
-        if(obj && obj.userData.isTreeTop){
-          mouse.x=(event.clientX/window.innerWidth)*2 - 1;
-          mouse.y=-(event.clientY/window.innerHeight)*2 + 1;
+      if (activeUUID) {
+        const obj = floatingObjects.find(o => o.uuid === activeUUID);
+        if (obj && obj.userData.isTreeTop) {
+          mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+          mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
           raycaster.setFromCamera(mouse, camera);
-          const hits=raycaster.intersectObject(obj, true);
-          if(hits.length>0) isInspectionDragging=true;
+          const hits = raycaster.intersectObject(obj, true);
+          if (hits.length > 0) isInspectionDragging = true;
         }
       }
     });
 
-    window.addEventListener('pointerup', ()=>{
-      isInspectionDragging=false;
-      initialPinchDistance=0;
+    window.addEventListener('pointerup', () => {
+      isInspectionDragging = false;
+      initialPinchDistance = 0;
     });
 
-    window.addEventListener('wheel', (event)=>{
+    window.addEventListener('wheel', (event) => {
       handleZoom(event.deltaY);
-    }, { passive:false });
+    }, { passive: false });
 
-    function getPinchDistance(event){
-      const dx=event.touches[0].pageX - event.touches[1].pageX;
-      const dy=event.touches[0].pageY - event.touches[1].pageY;
-      return Math.sqrt(dx*dx + dy*dy);
+    function getPinchDistance(event) {
+      const dx = event.touches[0].pageX - event.touches[1].pageX;
+      const dy = event.touches[0].pageY - event.touches[1].pageY;
+      return Math.sqrt(dx * dx + dy * dy);
     }
 
-    function handleZoom(deltaY){
-      if(!activeUUID) return;
-      const obj=floatingObjects.find(o=>o.uuid===activeUUID);
-      if(!obj || (!obj.userData.isTreeTop && obj.userData.pickType!=='photo')) return;
+    function handleZoom(deltaY) {
+      if (!activeUUID) return;
+      const obj = floatingObjects.find(o => o.uuid === activeUUID);
+      if (!obj || (!obj.userData.isTreeTop && obj.userData.pickType !== 'photo')) return;
       obj.userData.currentInspectionScale += deltaY * -0.001;
       obj.userData.currentInspectionScale = clamp(obj.userData.currentInspectionScale, 0.5, 4.0);
     }
 
-    function unpinCurrent(){
-      if(!activeUUID) return;
-      const prev=floatingObjects.find(o=>o.uuid===activeUUID);
-      if(prev){
-        prev.userData.pinned=false;
-        prev.userData.pinnedDist=null;
-        if(prev.userData.isTreeTop || prev.userData.pickType==='photo'){
+    function unpinCurrent() {
+      if (!activeUUID) return;
+      const prev = floatingObjects.find(o => o.uuid === activeUUID);
+      if (prev) {
+        prev.userData.pinned = false;
+        prev.userData.pinnedDist = null;
+        if (prev.userData.isTreeTop || prev.userData.pickType === 'photo') {
           prev.userData.currentInspectionScale = prev.userData.inspectionBaseScale;
         }
-        const txt=prev.getObjectByName("AnniversaryText");
-        if(txt) txt.visible=false;
+        const txt = prev.getObjectByName("AnniversaryText");
+        if (txt) txt.visible = false;
       }
-      activeUUID=null;
-      isInspectionDragging=false;
-      controls.enabled=true;
-      controls.autoRotate=false;
+      activeUUID = null;
+      isInspectionDragging = false;
+      controls.enabled = true;
+      controls.autoRotate = false;
       document.getElementById('swipe_hint').style.opacity = 0;
     }
 
-    function triggerExplosionOrReset(){
-      if(activeUUID){ unpinCurrent(); return; }
+    function triggerExplosionOrReset() {
+      if (activeUUID) { unpinCurrent(); return; }
       isExploded = !isExploded;
       isCameraMoving = true;
       controls.enabled = false;
-      if(isExploded) targetCameraPos.copy(camera.userData.orbitPos);
+      if (isExploded) targetCameraPos.copy(camera.userData.orbitPos);
       else targetCameraPos.copy(camera.userData.treePos);
-      if(!isExploded){
-        const top=floatingObjects.find(o=>o.userData && o.userData.isTreeTop);
-        if(top) top.userData.treeFacingSet=false;
+      if (!isExploded) {
+        const top = floatingObjects.find(o => o.userData && o.userData.isTreeTop);
+        if (top) top.userData.treeFacingSet = false;
       }
     }
 
-    function pinObject(root){
+    function pinObject(root) {
       unpinCurrent();
       hideGiftText();
-      activeUUID=root.uuid;
-      root.userData.pinned=true;
+      activeUUID = root.uuid;
+      root.userData.pinned = true;
       scene.updateMatrixWorld(true);
 
-      const r=getWorldRadius(root);
-      const baseDist=isMobile?70:60;
-      const dist=clamp(Math.max(baseDist, computeSafeDistance(r)), 10, camera.far - 80);
-      root.userData.pinnedDist=dist;
+      const r = getWorldRadius(root);
+      const baseDist = isMobile ? 70 : 60;
+      const dist = clamp(Math.max(baseDist, computeSafeDistance(r)), 10, camera.far - 80);
+      root.userData.pinnedDist = dist;
 
-      if(root.userData.isTreeTop){
+      if (root.userData.isTreeTop) {
         root.userData.inspectionPos.copy(getFocusPosByDistance(dist));
         root.userData.currentInspectionScale = root.userData.inspectionBaseScale;
-        controls.enabled=false;
-      }else{
-        if(root.userData.pickType==='gift' || root.type==='Group'){
+        controls.enabled = false;
+      } else {
+        if (root.userData.pickType === 'gift' || root.type === 'Group') {
           faceCameraUprightY(root);
-        }else if(root.userData.pickType==='photo'){
+        } else if (root.userData.pickType === 'photo') {
           root.lookAt(camera.position);
           root.userData.currentInspectionScale = root.userData.inspectionBaseScale;
           document.getElementById('swipe_hint').style.opacity = 1;
-        }else{
+        } else {
           root.lookAt(camera.position);
         }
         root.userData.pinnedRot.copy(root.rotation);
-        controls.enabled=false;
+        controls.enabled = false;
       }
     }
 
-    function openGiftBox(giftRoot){
-      if(!giftRoot || giftRoot.userData.opened) return;
+    function openGiftBox(giftRoot) {
+      if (!giftRoot || giftRoot.userData.opened) return;
       giftRoot.userData.opened = true;
 
       scene.updateMatrixWorld(true);
@@ -1325,48 +1485,48 @@
 
       createConfettiBurst(center, 1400);
 
-      const idx = floatingObjects.findIndex(o=>o.uuid===giftRoot.uuid);
-      if(idx !== -1) floatingObjects.splice(idx, 1);
+      const idx = floatingObjects.findIndex(o => o.uuid === giftRoot.uuid);
+      if (idx !== -1) floatingObjects.splice(idx, 1);
 
-      if(activeUUID === giftRoot.uuid){
+      if (activeUUID === giftRoot.uuid) {
         unpinCurrent();
       }
 
       scene.remove(giftRoot);
 
       const msg = giftRoot.userData.giftMessage || "圣诞快乐！";
-      setTimeout(()=>{ showGiftText(msg); }, 1150);
+      setTimeout(() => { showGiftText(msg); }, 1150);
     }
 
     // ===== Main click picking =====
-    window.addEventListener('pointerup', (event)=>{
-      if(isDraggingCam) return;
+    window.addEventListener('pointerup', (event) => {
+      if (isDraggingCam) return;
 
       // 4) 文字出现后：再点一下 -> 退出回漂浮状态
-      if(giftTextEl && giftTextEl.style.display === 'block'){
+      if (giftTextEl && giftTextEl.style.display === 'block') {
         hideGiftText();
-        if(activeUUID) unpinCurrent();
+        if (activeUUID) unpinCurrent();
         return;
       }
 
-      if(!isExploded) return;
-      if(isMultiTouch) return;
-      if(isDragMove) return;
+      if (!isExploded) return;
+      if (isMultiTouch) return;
+      if (isDragMove) return;
 
       scene.updateMatrixWorld(true);
-      mouse.x=(event.clientX/window.innerWidth)*2 - 1;
-      mouse.y=-(event.clientY/window.innerHeight)*2 + 1;
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
 
       // TreeTop hitbox
-      if(activeUUID){
-        const currentObj=floatingObjects.find(o=>o.uuid===activeUUID);
-        if(currentObj && currentObj.userData.isTreeTop){
-          const hits=raycaster.intersectObject(currentObj, true);
-          for(const hit of hits){
-            if(hit.object.userData.isHitbox){
-              const txt=currentObj.getObjectByName("AnniversaryText");
-              if(txt) txt.visible = !txt.visible;
+      if (activeUUID) {
+        const currentObj = floatingObjects.find(o => o.uuid === activeUUID);
+        if (currentObj && currentObj.userData.isTreeTop) {
+          const hits = raycaster.intersectObject(currentObj, true);
+          for (const hit of hits) {
+            if (hit.object.userData.isHitbox) {
+              const txt = currentObj.getObjectByName("AnniversaryText");
+              if (txt) txt.visible = !txt.visible;
               return;
             }
           }
@@ -1374,91 +1534,91 @@
       }
 
       const intersects = raycaster.intersectObjects(floatingObjects, true);
-      const roots=[]; const seen=new Set();
-      for(const hit of intersects){
-        const root=findInteractiveRoot(hit.object);
-        if(root && !seen.has(root.uuid)){
+      const roots = []; const seen = new Set();
+      for (const hit of intersects) {
+        const root = findInteractiveRoot(hit.object);
+        if (root && !seen.has(root.uuid)) {
           seen.add(root.uuid);
           roots.push(root);
         }
       }
 
-      if(roots.length===0){
-        if(activeUUID){
-          const currentObj=floatingObjects.find(o=>o.uuid===activeUUID);
-          if(currentObj && currentObj.userData.isTreeTop) return;
+      if (roots.length === 0) {
+        if (activeUUID) {
+          const currentObj = floatingObjects.find(o => o.uuid === activeUUID);
+          if (currentObj && currentObj.userData.isTreeTop) return;
           unpinCurrent();
         }
         return;
       }
 
-      if(activeUUID && roots[0].uuid===activeUUID && roots[0].userData.isTreeTop) return;
+      if (activeUUID && roots[0].uuid === activeUUID && roots[0].userData.isTreeTop) return;
 
-      let chosen = roots.find(r=>r.userData.pickType==='gift');
-      if(!chosen) chosen = roots[0];
+      let chosen = roots.find(r => r.userData.pickType === 'gift');
+      if (!chosen) chosen = roots[0];
 
       // 2) 同一个礼物盒再次点：爆开纸片 -> 消失 -> 出文字
-      if(activeUUID === chosen.uuid && chosen.userData.pickType === 'gift'){
+      if (activeUUID === chosen.uuid && chosen.userData.pickType === 'gift') {
         openGiftBox(chosen);
         return;
       }
 
-      if(activeUUID === chosen.uuid) return;
+      if (activeUUID === chosen.uuid) return;
       pinObject(chosen);
     });
 
-    window.addEventListener('dblclick', ()=>{ triggerExplosionOrReset(); });
+    window.addEventListener('dblclick', () => { triggerExplosionOrReset(); });
 
-    function updateCameraPosition(){
+    function updateCameraPosition() {
       const aspect = window.innerWidth / window.innerHeight;
-      if(aspect<1){
-        camera.userData.treePos = new THREE.Vector3(0,5,110);
-        camera.userData.orbitPos = new THREE.Vector3(0,30,280);
-      }else{
-        camera.userData.treePos = new THREE.Vector3(0,5,80);
-        camera.userData.orbitPos = new THREE.Vector3(0,40,280);
+      if (aspect < 1) {
+        camera.userData.treePos = new THREE.Vector3(0, 5, 110);
+        camera.userData.orbitPos = new THREE.Vector3(0, 30, 280);
+      } else {
+        camera.userData.treePos = new THREE.Vector3(0, 5, 80);
+        camera.userData.orbitPos = new THREE.Vector3(0, 40, 280);
       }
-      if(!camera.userData.isInitialized){
+      if (!camera.userData.isInitialized) {
         camera.position.copy(camera.userData.treePos);
         camera.userData.isInitialized = true;
       }
     }
 
-    function animate(){
+    function animate() {
       requestAnimationFrame(animate);
 
       const time = Date.now();
-      lightBulbs.forEach(bulb=>{
+      lightBulbs.forEach(bulb => {
         const t = time * 0.005;
-        const sparkle = Math.sin(t*10 + bulb.userData.blinkOffset)*0.5 + Math.sin(t*25 + bulb.userData.blinkOffset*2)*0.3;
-        bulb.material.emissiveIntensity = 2.5 + sparkle*1.5;
+        const sparkle = Math.sin(t * 10 + bulb.userData.blinkOffset) * 0.5 + Math.sin(t * 25 + bulb.userData.blinkOffset * 2) * 0.3;
+        bulb.material.emissiveIntensity = 2.5 + sparkle * 1.5;
       });
 
       updateFireworks();
       updateConfettis();
 
-      if(isCameraMoving){
+      if (isCameraMoving) {
         camera.position.lerp(targetCameraPos, 0.03);
-        camera.lookAt(0,5,0);
-        if(camera.position.distanceTo(targetCameraPos) < 1.0){
-          isCameraMoving=false;
-          controls.enabled=true;
+        camera.lookAt(0, 5, 0);
+        if (camera.position.distanceTo(targetCameraPos) < 1.0) {
+          isCameraMoving = false;
+          controls.enabled = true;
           controls.update();
         }
-      }else{
+      } else {
         controls.update();
       }
 
-      if(!isExploded){
+      if (!isExploded) {
         starMesh.rotation.y += 0.0003;
         starMesh.rotation.x += 0.0001;
       }
 
-      const lerpSpeed=0.02;
+      const lerpSpeed = 0.02;
 
-      floatingObjects.forEach(obj=>{
-        if(obj.userData.pinned && obj.uuid===activeUUID){
-          if(obj.userData.isTreeTop){
+      floatingObjects.forEach(obj => {
+        if (obj.userData.pinned && obj.uuid === activeUUID) {
+          if (obj.userData.isTreeTop) {
             alignLocalCenterToWorldPoint(obj, obj.userData.localCenter, obj.userData.inspectionPos);
             const bigScale = obj.userData.originScale.clone().multiplyScalar(obj.userData.currentInspectionScale);
             obj.scale.lerp(bigScale, 0.12);
@@ -1468,19 +1628,19 @@
           const dist = obj.userData.pinnedDist || (isMobile ? 70 : 60);
           const focusPos = getFocusPosByDistance(dist);
 
-          if(obj.userData.pickType==='photo'){
+          if (obj.userData.pickType === 'photo') {
             obj.lookAt(camera.position);
-          }else{
+          } else {
             obj.rotation.copy(obj.userData.pinnedRot);
           }
 
           alignLocalCenterToWorldPoint(obj, obj.userData.localCenter, focusPos);
 
           let bigScale;
-          if(obj.type==='Group') bigScale = obj.userData.originScale.clone().multiplyScalar(1.5);
-          else if(obj.geometry && obj.geometry.type==='PlaneGeometry'){
+          if (obj.type === 'Group') bigScale = obj.userData.originScale.clone().multiplyScalar(1.5);
+          else if (obj.geometry && obj.geometry.type === 'PlaneGeometry') {
             bigScale = obj.userData.explodedScale.clone().multiplyScalar(obj.userData.currentInspectionScale * 2.0);
-          }else{
+          } else {
             bigScale = obj.userData.originScale.clone().multiplyScalar(2.0);
           }
 
@@ -1488,13 +1648,13 @@
           return;
         }
 
-        if(!isExploded && obj.userData.isTreeTop){
+        if (!isExploded && obj.userData.isTreeTop) {
           const topPoint = getTreeTopWorldPoint(tmpV3c);
           topPoint.y -= 1.5;
           snapBottomCenterToWorldPoint(obj, topPoint);
 
-          if(!obj.userData.treeFacingSet){
-            obj.rotation.x=0; obj.rotation.z=0;
+          if (!obj.userData.treeFacingSet) {
+            obj.rotation.x = 0; obj.rotation.z = 0;
             obj.rotation.y = (obj.userData.yawOffset || 0);
             obj.userData.treeFacingSet = true;
           }
@@ -1503,14 +1663,14 @@
         }
 
         let targetScale;
-        if(isExploded){
-          targetScale = obj.userData.isExplodedVisible ? obj.userData.explodedScale : new THREE.Vector3(0.001,0.001,0.001);
-        }else{
+        if (isExploded) {
+          targetScale = obj.userData.isExplodedVisible ? obj.userData.explodedScale : new THREE.Vector3(0.001, 0.001, 0.001);
+        } else {
           targetScale = obj.userData.originScale;
         }
         obj.scale.lerp(targetScale, lerpSpeed);
 
-        if(isExploded){
+        if (isExploded) {
           obj.userData.orbitAngle -= obj.userData.orbitSpeed;
           const targetX = Math.cos(obj.userData.orbitAngle) * obj.userData.orbitRadius;
           const targetZ = Math.sin(obj.userData.orbitAngle) * obj.userData.orbitRadius;
@@ -1518,7 +1678,7 @@
           obj.position.lerp(orbitalPos, lerpSpeed);
           obj.rotation.x += obj.userData.floatSpeed.x;
           obj.rotation.y += obj.userData.floatSpeed.y;
-        }else{
+        } else {
           obj.position.lerp(obj.userData.originPos, lerpSpeed);
           obj.quaternion.slerp(new THREE.Quaternion().setFromEuler(obj.userData.originRot), lerpSpeed);
         }
@@ -1527,7 +1687,7 @@
       renderer.render(scene, camera);
     }
 
-    window.addEventListener('resize', ()=>{
+    window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -1538,29 +1698,30 @@
     updateCameraPosition();
     animate();
 
-    const camToggleBtn=document.getElementById('cam_toggle');
-    const musicToggleBtn=document.getElementById('music_toggle');
+    const camToggleBtn = document.getElementById('cam_toggle');
+    const musicToggleBtn = document.getElementById('music_toggle');
 
-    camToggleBtn.addEventListener('click', ()=>{
-      if(camWindow.style.display==='none'){
-        camWindow.style.display='block';
+    camToggleBtn.addEventListener('click', () => {
+      if (camWindow.style.display === 'none') {
+        camWindow.style.display = 'block';
         camToggleBtn.classList.remove('off');
-      }else{
-        camWindow.style.display='none';
+      } else {
+        camWindow.style.display = 'none';
         camToggleBtn.classList.add('off');
       }
     });
 
-    musicToggleBtn.addEventListener('click', ()=>{
-      if(!sound || !sound.buffer) return;
-      if(sound.isPlaying){
+    musicToggleBtn.addEventListener('click', () => {
+      if (!sound || !sound.buffer) return;
+      if (sound.isPlaying) {
         sound.pause();
         musicToggleBtn.classList.add('off');
-      }else{
+      } else {
         sound.play();
         musicToggleBtn.classList.remove('off');
       }
     });
   </script>
 </body>
+
 </html>
