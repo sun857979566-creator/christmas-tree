@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>我的3D照片圣诞树 - 赛博完全体</title>
+  <title>我的3D照片圣诞树 - 结婚两周年画廊版</title>
   <style>
     body {
       margin: 0;
@@ -119,7 +119,7 @@
   </div>
 
   <div id="overlay">
-    <div style="font-size: 2rem; color: #00ffff; text-shadow: 0 0 20px #00ffff;">CYBER CHRISTMAS</div>
+    <div style="font-size: 2rem; color: #ff69b4; text-shadow: 0 0 20px #ff69b4; font-family: 'Arial Rounded MT Bold', sans-serif;">Happy Anniversary</div>
     <div style="color: #888; margin-top: 10px;">Gesture Control System Loading...</div>
     <button id="start_btn">LOADING...</button>
   </div>
@@ -184,6 +184,9 @@
     // ================= 3. 全局变量 =================
     const floatingObjects = [];
     const lightBulbs = []; 
+    // --- 新增：照片播放列表 ---
+    const photoPlaylist = []; 
+
     let isExploded = false;
     const isMobile = window.innerWidth < 768;
 
@@ -402,6 +405,11 @@
       mesh.userData.yawOffset = 0;
       mesh.userData.treeFacingSet = false;
       floatingObjects.push(mesh);
+
+      // --- 新增：如果是照片，加入播放列表 ---
+      if (mesh.userData.pickType === 'photo') {
+          photoPlaylist.push(mesh);
+      }
     }
 
     // A. 照片
@@ -450,8 +458,24 @@
       treeRoot.add(sphere);
     }
 
-    // ================= C. 豹警官 =================
+    // ================= C. 豹警官 (增加“猪猪体”文字和胸口点击功能) =================
     const gltfLoader = new GLTFLoader();
+
+    // 1. 创建文字 Sprite
+    function createCuteTextSprite(message) {
+      const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+      canvas.width = 1024; canvas.height = 256;
+      ctx.font = `bold 60px "YouYuan", "Wawati SC", "HanyiSenty", "Comic Sans MS", "Microsoft YaHei", sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.strokeStyle = 'white'; ctx.lineWidth = 8;
+      ctx.strokeText(message, canvas.width / 2, canvas.height / 2);
+      ctx.fillStyle = '#FF69B4'; ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+      const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+      sprite.scale.set(12, 3, 1); 
+      return sprite;
+    }
+
     function loadClawhauserGLB(url) {
       gltfLoader.load(url, (gltf) => {
         const model = gltf.scene;
@@ -462,20 +486,44 @@
         model.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
         root.position.set(0, TREE_HEIGHT / 2, 0);
         setupOrbitalData(root, 2.0);
-        root.userData.isExplodedVisible = true;
-        root.userData.isTreeTop = true;
-        root.userData.yawOffset = -THREE.MathUtils.degToRad(18);
-        root.userData.orbitRadius = 80;
-        root.userData.orbitY = TREE_HEIGHT / 2 + 10;
-        root.userData.treeFacingSet = false;
+        root.userData.isExplodedVisible = true; root.userData.isTreeTop = true;
+        root.userData.yawOffset = -THREE.MathUtils.degToRad(18); root.userData.orbitRadius = 80;
+        root.userData.orbitY = TREE_HEIGHT / 2 + 10; root.userData.treeFacingSet = false;
+
         treeRoot.add(root);
         scene.updateMatrixWorld(true);
+
+        // --- 核心修复：位置计算顺序修正 ---
+        // 1. 先根据 model 就算好包围盒和中心点，确保位置与原来一致
         const b = new THREE.Box3().setFromObject(root);
         const center = new THREE.Vector3(); b.getCenter(center);
         const bottomCenterWorld = new THREE.Vector3((b.min.x + b.max.x) / 2, b.min.y, (b.min.z + b.max.z) / 2);
         root.userData.bottomCenterLocal = root.worldToLocal(bottomCenterWorld.clone());
-        const localCenter = root.worldToLocal(center.clone());
-        root.userData.localCenter.copy(localCenter);
+        root.userData.localCenter.copy(root.worldToLocal(center.clone()));
+
+        // 2. 然后再添加判定区和文字
+        // 判定区挂载到 model 上，跟随旋转
+        const hitGeo = new THREE.BoxGeometry(0.5, 0.6, 0.4); 
+        const hitMat = new THREE.MeshBasicMaterial({ 
+            visible: true,      // 必须为true才能被点击
+            transparent: true,  // 开启透明
+            opacity: 0.0,       // 完全透明
+            depthWrite: false,
+            side: THREE.DoubleSide
+        }); 
+        const chestHitbox = new THREE.Mesh(hitGeo, hitMat);
+        chestHitbox.position.set(0, 1.3, 0.4); 
+        chestHitbox.name = "ChestHitbox";
+        chestHitbox.userData.isHitbox = true; 
+        model.add(chestHitbox); // 挂载到 model
+
+        // 文字挂载到 root 上，保持正对
+        const textSprite = createCuteTextSprite("老婆，两周年结婚快乐");
+        textSprite.position.set(0, 13.0, 0); 
+        textSprite.visible = false;
+        textSprite.name = "AnniversaryText";
+        root.add(textSprite); // 挂载到 root
+
       }, undefined, (err) => console.log("GLB error", err));
     }
     loadClawhauserGLB('clawhauser.glb');
@@ -725,8 +773,23 @@
             };
 
         } catch (e) {
-            alert("启动失败: 请检查摄像头权限或 HTTPS 连接\n" + e.message);
-            startBtn.innerText = "RETRY";
+            console.warn("启动摄像头失败，进入无摄像头调试模式:", e);
+            startBtn.innerText = 'NO CAMERA MODE';
+            
+            // 降级处理：依然隐藏遮罩，但隐藏摄像头相关UI
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                setTimeout(() => { overlay.style.display = 'none'; }, 800);
+                
+                // 隐藏摄像头窗口
+                camWindow.style.display = 'none';
+                
+                // 隐藏左上角摄像头开关，只显示音乐开关
+                document.getElementById('cam_toggle').style.display = 'none';
+                document.getElementById('music_toggle').style.display = 'flex';
+                
+                // 注意：这里不再调用 processVideoFrame()，防止报错
+            }, 500);
         }
     };
 
@@ -877,10 +940,65 @@
 
         const dx = event.touches[0].clientX - touchStartPos.x;
         const dy = event.touches[0].clientY - touchStartPos.y;
+        
+        // --- 新增：如果正在查看照片，检测水平滑动，拦截默认视角移动 ---
+        if (activeUUID && floatingObjects.find(o => o.uuid === activeUUID)?.userData.pickType === 'photo') {
+             // 只有当是单指、水平移动距离大于 50px、且垂直移动较小时，才认为是切图操作
+             if (event.touches.length === 1 && Math.abs(dx) > 50 && Math.abs(dy) < 50) {
+                 event.preventDefault();
+                 event.stopPropagation();
+                 return; 
+             }
+        }
+
         if (Math.sqrt(dx * dx + dy * dy) > 10) {
             isDragMove = true;
         }
     }, { passive: false });
+
+    // --- 新增：处理滑动切换逻辑 ---
+    window.addEventListener('touchend', (event) => {
+        if (isDraggingCam) return; // 拖摄像头不触发
+
+        // 检测滑动
+        if (activeUUID && !isMultiTouch && !isDragMove) {
+             const activeObj = floatingObjects.find(o => o.uuid === activeUUID);
+             if (activeObj && activeObj.userData.pickType === 'photo') {
+                 const dx = event.changedTouches[0].clientX - touchStartPos.x;
+                 const dy = event.changedTouches[0].clientY - touchStartPos.y;
+                 
+                 // 水平滑动距离超过50，且垂直距离小于50
+                 if (Math.abs(dx) > 50 && Math.abs(dy) < 50) {
+                     const currIdx = photoPlaylist.findIndex(p => p.uuid === activeUUID);
+                     if (currIdx !== -1) {
+                         let nextIdx;
+                         if (dx > 0) { // 向右滑 -> 上一张
+                             nextIdx = (currIdx - 1 + photoPlaylist.length) % photoPlaylist.length;
+                         } else { // 向左滑 -> 下一张
+                             nextIdx = (currIdx + 1) % photoPlaylist.length;
+                         }
+                         // 切换到新照片
+                         pinObject(photoPlaylist[nextIdx]);
+                         isDragMove = true; // 标记已处理，防止触发点击事件
+                     }
+                 }
+             }
+        }
+
+        if (event.touches.length === 0) {
+            setTimeout(() => { isMultiTouch = false; }, 100); 
+        }
+
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTapTime;
+        if (tapLength < 300 && tapLength > 0) {
+            if (event.changedTouches.length === 1 && !isDragMove) {
+                triggerExplosionOrReset();
+                event.preventDefault(); 
+            }
+        }
+        lastTapTime = currentTime;
+    });
 
     // 鼠标/单指拖动控制 (用于旋转豹警官)
     window.addEventListener('pointermove', (event) => {
@@ -951,6 +1069,9 @@
         if (prev.userData.isTreeTop || prev.userData.pickType === 'photo') {
             prev.userData.currentInspectionScale = prev.userData.inspectionBaseScale;
         }
+        // 退出时隐藏文字
+        const txt = prev.getObjectByName("AnniversaryText");
+        if(txt) txt.visible = false;
       }
       activeUUID = null;
       isInspectionDragging = false;
@@ -1015,6 +1136,27 @@
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
+
+        // --- 核心修正逻辑：优先检测是否点击了胸口 Hitbox ---
+        if (activeUUID) {
+            const currentObj = floatingObjects.find(o => o.uuid === activeUUID);
+            if (currentObj && currentObj.userData.isTreeTop) {
+                // 检测是否点击了 Hitbox (递归检测子对象)
+                const hits = raycaster.intersectObject(currentObj, true);
+                for (const hit of hits) {
+                    if (hit.object.userData.isHitbox) {
+                        // 触发文字显示！
+                        const txt = currentObj.getObjectByName("AnniversaryText");
+                        if (txt) {
+                             txt.visible = !txt.visible; // 点击切换显示/隐藏
+                        }
+                        return; // 阻止代码往下执行，防止取消聚焦
+                    }
+                }
+            }
+        }
+        // ------------------------------------------------
+
         const intersects = raycaster.intersectObjects(floatingObjects, true);
         const roots = []; const seen = new Set();
         for (const hit of intersects) {
@@ -1030,6 +1172,9 @@
             }
             return;
         }
+
+        // 如果点到了当前聚焦的豹警官（但没点到Hitbox），不取消聚焦
+        if(activeUUID && roots[0].uuid === activeUUID && roots[0].userData.isTreeTop) return;
 
         let chosen = roots.find(r => r.userData.pickType === 'gift');
         if (!chosen) chosen = roots[0];
@@ -1111,7 +1256,8 @@
           let bigScale;
           if (obj.type === 'Group') bigScale = obj.userData.originScale.clone().multiplyScalar(1.5);
           else if (obj.geometry && obj.geometry.type === 'PlaneGeometry') {
-              bigScale = obj.userData.explodedScale.clone().multiplyScalar(obj.userData.currentInspectionScale);
+              // 【核心修改点】乘以 2.0，让照片点击后大小适中，类似你的截图效果
+              bigScale = obj.userData.explodedScale.clone().multiplyScalar(obj.userData.currentInspectionScale * 2.0);
           }
           else bigScale = obj.userData.originScale.clone().multiplyScalar(2.0);
           obj.scale.lerp(bigScale, 0.12);
