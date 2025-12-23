@@ -17,94 +17,182 @@
     }
 
     #overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.92); z-index: 2000;
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      color: #fff; text-align: center; transition: opacity 0.8s;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      text-align: center;
+      transition: opacity 0.8s;
     }
+
     #start_btn {
-      padding: 15px 40px; font-size: 18px; color: #444; background: #222;
-      border: 1px solid #444; border-radius: 50px; font-weight: bold;
-      pointer-events: none; transition: all 0.4s ease; text-transform: uppercase; margin-top: 20px;
+      padding: 15px 40px;
+      font-size: 18px;
+      color: #444;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 50px;
+      font-weight: bold;
+      pointer-events: none;
+      transition: all 0.4s ease;
+      text-transform: uppercase;
+      margin-top: 20px;
     }
+
     #start_btn.ready {
-      color: #000; background: #00ffff; border-color: #00ffff;
-      box-shadow: 0 0 30px rgba(0, 255, 255, 0.6); cursor: pointer; pointer-events: auto;
+      color: #000;
+      background: #00ffff;
+      border-color: #00ffff;
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+      cursor: pointer;
+      pointer-events: auto;
     }
 
     #cam_window {
-      position: absolute; bottom: 20px; right: 20px; width: 130px; height: 173px;
-      z-index: 1000; background: rgba(0, 0, 0, 0.6);
-      border: 2px solid rgba(0, 255, 255, 0.5); border-radius: 12px;
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 130px;
+      height: 173px;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid rgba(0, 255, 255, 0.5);
+      border-radius: 12px;
       box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
-      overflow: hidden; display: none;
+      overflow: hidden;
+      display: none;
       backdrop-filter: blur(4px);
       transition: all 0.3s ease;
     }
-    #hand_canvas { width: 100%; height: 100%; transform: scaleX(-1); display: block; }
-    #raw_video { display: none; }
+
+    #hand_canvas {
+      width: 100%;
+      height: 100%;
+      transform: scaleX(-1);
+      display: block;
+    }
+
+    #raw_video {
+      display: none;
+    }
 
     .control-btn {
-        position: absolute; top: 20px; width: 44px; height: 44px;
-        background: rgba(255, 255, 255, 0.15); border-radius: 50%;
-        display: flex; justify-content: center; align-items: center;
-        cursor: pointer; z-index: 1500; transition: all 0.3s ease;
-        backdrop-filter: blur(2px); border: 1px solid rgba(255, 255, 255, 0.1);
+      position: absolute;
+      top: 20px;
+      width: 44px;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 1500;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(2px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .control-btn:hover { background: rgba(255, 255, 255, 0.3); }
-    .control-btn svg { width: 24px; height: 24px; fill: rgba(255, 255, 255, 0.9); transition: fill 0.3s ease; }
-    .control-btn.off svg { fill: rgba(255, 255, 255, 0.3); }
-    #cam_toggle { left: 20px; }
-    #music_toggle { right: 20px; }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .control-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: rgba(255, 255, 255, 0.9);
+      transition: fill 0.3s ease;
+    }
+
+    .control-btn.off svg {
+      fill: rgba(255, 255, 255, 0.3);
+    }
+
+    #cam_toggle {
+      left: 20px;
+    }
+
+    #music_toggle {
+      right: 20px;
+    }
 
     #swipe_hint {
-        position: absolute; top: 65%; left: 0; width: 100%; text-align: center;
-        color: rgba(255, 255, 255, 0.7); pointer-events: none; opacity: 0; transition: opacity 0.5s ease;
-        font-size: 16px; font-weight: bold; text-shadow: 0 0 8px rgba(0,0,0,0.9); z-index: 1400; letter-spacing: 2px;
-        font-family: 'Arial Rounded MT Bold', sans-serif;
+      position: absolute;
+      top: 65%;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      font-size: 16px;
+      font-weight: bold;
+      text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+      z-index: 1400;
+      letter-spacing: 2px;
+      font-family: 'Arial Rounded MT Bold', sans-serif;
     }
 
-    /* ===================== 新增：礼物彩纸层（爆开飞起->飘远->渐隐 3~4s） ===================== */
-    #confetti_layer{
+    /* ===================== ✅ 必须：彩纸层不挡任何点击 + 默认隐藏 ===================== */
+    #confetti_layer {
       position: fixed;
       inset: 0;
       z-index: 2800;
       pointer-events: none;
+      /* ✅ 关键：不挡 banner/按钮点击 */
       overflow: hidden;
       display: none;
+      /* ✅ 关键：默认不要显示 */
     }
-    .confetti-piece{
+
+    /* ===================== DOM 彩纸（爆开后慢慢飘远 + 渐隐，顺滑版） ===================== */
+    .confetti-piece {
       position: absolute;
       border-radius: 2px;
       opacity: 0;
-      transform: translate(-50%, -50%) rotate(0deg);
-      animation: confettiBurst var(--dur, 3400ms) cubic-bezier(.12,.72,.18,1) forwards;
-      box-shadow: 0 0 10px rgba(255,255,255,0.25);
+      transform: translate3d(-50%, -50%, 0) rotate(0deg);
       will-change: transform, opacity;
+      box-shadow: none;
+      /* ✅ 减卡 */
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
+      backface-visibility: hidden;
     }
-    @keyframes confettiBurst{
-      0%{
+
+    @keyframes confettiFloatOut {
+      0% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(0.95) rotate(0deg);
+        transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(0.9);
       }
-      8%{ opacity: 1; }
-      30%{
+
+      8% {
+        opacity: 1;
+      }
+
+      /* 爆开：主要扩散在 35% 前完成，但不“冲” */
+      35% {
         opacity: 1;
         transform:
-          translate(calc(-50% + var(--dx1)), calc(-50% + var(--dy1)))
-          rotate(var(--rot1))
-          scale(1);
+          translate3d(calc(-50% + var(--dxA)), calc(-50% + var(--dyA)), 0) rotate(var(--rotA)) scale(1);
       }
-      100%{
+
+      /* 漂远：后半段慢慢飘，最后渐隐 */
+      100% {
         opacity: 0;
         transform:
-          translate(calc(-50% + var(--dx2)), calc(-50% + var(--dy2)))
-          rotate(var(--rot2))
-          scale(0.85);
+          translate3d(calc(-50% + var(--dxB)), calc(-50% + var(--dyB)), 0) rotate(var(--rotB)) scale(0.85);
       }
     }
 
-    /* ===================== 新增：礼物文字（猪猪体炫酷） ===================== */
+    /* ===================== 礼物文字（猪猪体炫酷） ===================== */
     @font-face {
       font-family: "ZhuZhuTi";
       src: url("fonts/zhuzhuti.ttf") format("truetype");
@@ -162,15 +250,43 @@
       animation: ringSpin 1.35s linear infinite;
     }
 
-    @keyframes ringSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
-    @keyframes giftTextPop {
-      0%{ opacity:0; transform: translate(-50%, -50%) scale(0.65) rotate(-2deg); }
-      70%{ opacity:1; transform: translate(-50%, -50%) scale(1.08) rotate(1deg); }
-      100%{ opacity:1; transform: translate(-50%, -50%) scale(1.0) rotate(0deg); }
+    @keyframes ringSpin {
+      0% {
+        transform: rotate(0deg)
+      }
+
+      100% {
+        transform: rotate(360deg)
+      }
     }
+
+    @keyframes giftTextPop {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.65) rotate(-2deg);
+      }
+
+      70% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.08) rotate(1deg);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.0) rotate(0deg);
+      }
+    }
+
     @keyframes giftTextGlow {
-      0%,100%{ filter: drop-shadow(0 0 6px rgba(255,215,0,0.55)); }
-      50%{ filter: drop-shadow(0 0 16px rgba(0,255,255,0.45)); }
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.55));
+      }
+
+      50% {
+        filter: drop-shadow(0 0 16px rgba(0, 255, 255, 0.45));
+      }
     }
   </style>
 
@@ -179,7 +295,7 @@
   <script>
     function activateBtn() {
       const btn = document.getElementById('start_btn');
-      if(btn) { btn.classList.add('ready'); btn.innerText = '欢迎来到Mia的圣诞树'; }
+      if (btn) { btn.classList.add('ready'); btn.innerText = '欢迎来到Mia的圣诞树'; }
     }
     window.addEventListener('load', () => setTimeout(activateBtn, 1000));
   </script>
@@ -196,15 +312,25 @@
 
 <body>
   <div id="cam_toggle" class="control-btn" style="display:none;">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="3.2" />
+      <path
+        d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" />
+      <path d="M0 0h24v24H0z" fill="none" />
+    </svg>
   </div>
 
   <div id="music_toggle" class="control-btn" style="display:none;">
-      <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+    <svg viewBox="0 0 24 24">
+      <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+      <path d="M0 0h24v24H0z" fill="none" />
+    </svg>
   </div>
 
   <div id="overlay">
-    <div style="font-size: 2rem; color: #ff69b4; text-shadow: 0 0 20px #ff69b4; font-family: 'Arial Rounded MT Bold', sans-serif;">Happy Anniversary</div>
+    <div
+      style="font-size: 2rem; color: #ff69b4; text-shadow: 0 0 20px #ff69b4; font-family: 'Arial Rounded MT Bold', sans-serif;">
+      Happy Anniversary</div>
     <div style="color: #888; margin-top: 10px;">Gesture Control System Loading...</div>
     <button id="start_btn">LOADING...</button>
   </div>
@@ -214,14 +340,13 @@
   <div id="cam_window"><canvas id="hand_canvas"></canvas></div>
   <video id="raw_video" playsinline webkit-playsinline></video>
 
-  <!-- 新增：彩纸层 + 文字层 -->
+  <!-- ✅ 新增：彩纸层（不挡点击） + 礼物文字层 -->
   <div id="confetti_layer"></div>
   <div id="gift_text"></div>
 
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { STLLoader } from 'three/addons/loaders/STLLoader.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
@@ -267,11 +392,11 @@
     controls.enableDamping = true; controls.dampingFactor = 0.05; controls.autoRotate = false;
     controls.minDistance = 1; controls.maxDistance = 1000; controls.target.set(0, 5, 0);
 
-    // ================= 3. 全局变量 =================
+    // ================= 全局变量 =================
     const floatingObjects = [];
     const lightBulbs = [];
 
-    // --- 不重复的唯一照片列表 ---
+    // --- 去重播放列表 ---
     const uniquePhotoPlaylist = [];
     const seenPhotoUrls = new Set();
 
@@ -297,7 +422,7 @@
     const fireworks = [];
     let handLandmarker = null;
     let lastGesture = 'UNKNOWN';
-    const HAND_CONNECTIONS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
+    const HAND_CONNECTIONS = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], [10, 11], [11, 12], [0, 13], [13, 14], [14, 15], [15, 16], [0, 17], [17, 18], [18, 19], [19, 20], [5, 9], [9, 13], [13, 17]];
 
     const tmpV3a = new THREE.Vector3();
     const tmpV3b = new THREE.Vector3();
@@ -376,7 +501,7 @@
       obj.position.add(delta);
     }
 
-    // ================= 4. 背景星空 =================
+    // ================= 背景星空 =================
     function createGlowTexture() {
       const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
       const ctx = canvas.getContext('2d');
@@ -420,7 +545,7 @@
     const starMesh = new THREE.Points(starGeo, starMat);
     scene.add(starMesh);
 
-    // ================= 5. 树 (构建逻辑) =================
+    // ================= 树（构建逻辑） =================
     const TOTAL_LEAVES = 600;
     const TREE_HEIGHT = 60;
     const TREE_RADIUS = 20;
@@ -470,7 +595,7 @@
       mesh.userData.inspectionBaseScale = 3.0;
       mesh.userData.currentInspectionScale = 3.0;
 
-      // ✅ 修复：不要把所有 Group 默认当 gift（否则豹警官会被当 gift）
+      // ✅ 修复：不要把所有 Group 默认当 gift（豹警官是 Group）
       mesh.userData.pickType = (mesh.geometry && mesh.geometry.type === 'PlaneGeometry') ? 'photo' : 'other';
 
       mesh.userData.isTreeTop = false;
@@ -497,7 +622,10 @@
         const baseSize = 3;
         let w = imgAspect > 1 ? baseSize * imgAspect : baseSize;
         let h = imgAspect > 1 ? baseSize : baseSize / imgAspect;
-        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true }));
+        const mesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(w, h),
+          new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true })
+        );
         const h_norm = Math.pow(i / TOTAL_LEAVES, 0.5);
         const y = (TREE_HEIGHT / 2) - (h_norm * TREE_HEIGHT);
         const r = (TREE_RADIUS * h_norm) + (Math.random() * 5);
@@ -522,7 +650,13 @@
     const baseSphereGeo = new THREE.SphereGeometry(0.3, 32, 32);
     const sphereCount = 450;
     for (let i = 0; i < sphereCount; i++) {
-      const sphere = new THREE.Mesh(baseSphereGeo, new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], metalness: 0.7, roughness: 0.35, envMapIntensity: 1.0 }));
+      const sphere = new THREE.Mesh(
+        baseSphereGeo,
+        new THREE.MeshStandardMaterial({
+          color: colors[Math.floor(Math.random() * colors.length)],
+          metalness: 0.7, roughness: 0.35, envMapIntensity: 1.0
+        })
+      );
       const scale = Math.random() * 1.2 + 0.8;
       sphere.scale.set(scale, scale, scale);
       const h_norm = Math.pow(i / sphereCount, 0.7);
@@ -535,7 +669,7 @@
       treeRoot.add(sphere);
     }
 
-    // ================= C. 豹警官 =================
+    // ================= 豹警官 =================
     const gltfLoader = new GLTFLoader();
 
     function createCuteTextSprite(message) {
@@ -605,7 +739,7 @@
     }
     loadClawhauserGLB('clawhauser.glb');
 
-    // ================== 新增：礼物文字池（一个逢考必过，其余随机） ==================
+    // ================= 礼物文字池（一个逢考必过，其余随机） =================
     const GIFT_TEXT_POOL = [
       "CPA必过✍️",
       "圣诞快乐🎄",
@@ -626,12 +760,16 @@
     }
     let giftTextCursor = 0;
 
-    // ================== 新增：DOM 彩纸 + 文本显示/隐藏 ==================
+    // ================= DOM 彩纸 + 礼物文字 =================
     const confettiLayer = document.getElementById('confetti_layer');
     const giftTextEl = document.getElementById('gift_text');
 
-    function createDomConfettiBurst(durationMs = 3400) {
+    // ✅ 保险：任何情况下默认隐藏，绝不挡 banner
+    if (confettiLayer) confettiLayer.style.display = 'none';
+
+    function createDomConfettiBurst(durationMs = 3800) {
       if (!confettiLayer) return;
+
       confettiLayer.style.display = 'block';
       confettiLayer.innerHTML = '';
 
@@ -639,7 +777,9 @@
       const cy = window.innerHeight * 0.5;
 
       const colors = ['#ff2b2b', '#2aff6a', '#ffd700', '#ffffff', '#00ffff'];
-      const count = 220;
+
+      // ✅ 控制数量：更顺滑
+      const count = (window.innerWidth < 768) ? 95 : 140;
 
       for (let i = 0; i < count; i++) {
         const p = document.createElement('div');
@@ -647,32 +787,47 @@
         p.style.left = cx + 'px';
         p.style.top = cy + 'px';
 
-        const dx1 = (Math.random() - 0.5) * 520;
-        const dy1 = -(220 + Math.random() * 420); // ✅ 先飞起来（向上）
+        const angle = Math.random() * Math.PI * 2;
 
-        const dx2 = dx1 + (Math.random() - 0.5) * 520;
-        const dy2 = dy1 + (120 + Math.random() * 520); // ✅ 慢慢飘远（轻微下落/漂移）
+        // 第一阶段：爆开扩散（不冲太快）
+        const rA = 110 + Math.random() * 210;  // 110~320
 
-        const rot1 = (Math.random() * 540 - 270) + 'deg';
-        const rot2 = (Math.random() * 900 - 450) + 'deg';
+        // 第二阶段：慢慢飘远（更远但更慢）
+        const rB = rA + 190 + Math.random() * 260; // +190~+450
 
-        p.style.setProperty('--dx1', dx1 + 'px');
-        p.style.setProperty('--dy1', dy1 + 'px');
-        p.style.setProperty('--dx2', dx2 + 'px');
-        p.style.setProperty('--dy2', dy2 + 'px');
-        p.style.setProperty('--rot1', rot1);
-        p.style.setProperty('--rot2', rot2);
+        // 整体轻微上浮（不会“上去又下来”）
+        const floatUpA = -(20 + Math.random() * 90);   // -20~-110
+        const floatUpB = floatUpA - (20 + Math.random() * 100);
 
-        const w = 7 + Math.random() * 16;
-        const h = 5 + Math.random() * 12;
+        // 漂移（让它像空气中飘散）
+        const driftX = (Math.random() - 0.5) * 150;
+        const driftY = (Math.random() - 0.5) * 130;
+
+        const dxA = Math.cos(angle) * rA;
+        const dyA = Math.sin(angle) * rA + floatUpA;
+
+        const dxB = Math.cos(angle) * rB + driftX;
+        const dyB = Math.sin(angle) * rB + floatUpB + driftY;
+
+        const rotA = (Math.random() * 520 - 260) + 'deg';
+        const rotB = (Math.random() * 900 - 450) + 'deg';
+
+        p.style.setProperty('--dxA', dxA + 'px');
+        p.style.setProperty('--dyA', dyA + 'px');
+        p.style.setProperty('--dxB', dxB + 'px');
+        p.style.setProperty('--dyB', dyB + 'px');
+        p.style.setProperty('--rotA', rotA);
+        p.style.setProperty('--rotB', rotB);
+
+        const w = 6 + Math.random() * 14;
+        const h = 4 + Math.random() * 10;
         p.style.width = w + 'px';
         p.style.height = h + 'px';
 
         p.style.background = colors[(Math.random() * colors.length) | 0];
-        p.style.animationDelay = (Math.random() * 160) + 'ms';
-        p.style.setProperty('--dur', durationMs + 'ms');
-        p.style.filter = `drop-shadow(0 0 ${6 + Math.random() * 10}px rgba(255,255,255,0.18))`;
-        p.style.mixBlendMode = 'screen';
+
+        const delay = Math.random() * 90; // 0~90ms
+        p.style.animation = `confettiFloatOut ${durationMs}ms linear ${delay}ms forwards`;
 
         confettiLayer.appendChild(p);
       }
@@ -680,7 +835,7 @@
       setTimeout(() => {
         confettiLayer.innerHTML = '';
         confettiLayer.style.display = 'none';
-      }, durationMs + 260);
+      }, durationMs + 200);
     }
 
     function showGiftText(msg) {
@@ -689,12 +844,12 @@
       const idx1 = msg.indexOf('，');
       const idx2 = msg.indexOf(',');
       const idx = idx1 >= 0 ? idx1 : idx2;
-      if (idx >= 0) {
-        html = msg.slice(0, idx + 1) + "<br>" + msg.slice(idx + 1);
-      }
+      if (idx >= 0) html = msg.slice(0, idx + 1) + "<br>" + msg.slice(idx + 1);
+
       giftTextEl.innerHTML = html;
       giftTextEl.style.display = 'block';
 
+      // 重触发动画
       giftTextEl.style.animation = 'none';
       void giftTextEl.offsetHeight;
       giftTextEl.style.animation = '';
@@ -709,35 +864,51 @@
       if (!giftRoot || giftRoot.userData.opened) return;
       giftRoot.userData.opened = true;
 
-      createDomConfettiBurst(3400);
+      // ✅ 只彩纸 + 文字，无音效
+      createDomConfettiBurst(3800);
 
+      // 移除对象
       const idx = floatingObjects.findIndex(o => o.uuid === giftRoot.uuid);
       if (idx !== -1) floatingObjects.splice(idx, 1);
-
       if (activeUUID === giftRoot.uuid) unpinCurrent();
       scene.remove(giftRoot);
 
       const msg = giftRoot.userData.giftMessage || "圣诞快乐！";
-      setTimeout(() => showGiftText(msg), 1600);
+      setTimeout(() => showGiftText(msg), 1700);
     }
 
-    // D. 礼物盒
+    // ================= 礼物盒 =================
     const giftFiles = ['giftbox1.glb', 'giftbox2.glb', 'giftbox3.glb', 'giftbox4.glb', 'giftbox5.glb'];
     const loadedModels = {};
     let loadCount = 0;
     giftFiles.forEach(fileName => {
-      gltfLoader.load(fileName, (gltf) => { loadedModels[fileName] = gltf.scene; checkLoadFinish(); }, undefined, () => { console.warn(fileName + " 加载失败"); checkLoadFinish(); });
+      gltfLoader.load(
+        fileName,
+        (gltf) => { loadedModels[fileName] = gltf.scene; checkLoadFinish(); },
+        undefined,
+        () => { console.warn(fileName + " 加载失败"); checkLoadFinish(); }
+      );
     });
     function checkLoadFinish() { loadCount++; if (loadCount === giftFiles.length) spawnFixedBoxes(); }
+
     function spawnFixedBoxes() {
       FIXED_LAYOUT.forEach(data => {
         const template = loadedModels[data.name]; if (!template) return;
         const clone = template.clone(true); clone.scale.set(15.0, 15.0, 15.0);
-        const box3 = new THREE.Box3().setFromObject(clone); const yOffset = -box3.min.y;
-        const group = new THREE.Group(); clone.position.y = yOffset; group.add(clone);
-        group.position.set(data.pos[0], data.pos[1], data.pos[2]); group.rotation.y = data.rot;
+
+        const box3 = new THREE.Box3().setFromObject(clone);
+        const yOffset = -box3.min.y;
+
+        const group = new THREE.Group();
+        clone.position.y = yOffset;
+        group.add(clone);
+
+        group.position.set(data.pos[0], data.pos[1], data.pos[2]);
+        group.rotation.y = data.rot;
+
         group.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
         scene.add(group);
+
         setupOrbitalData(group, 1.5);
         group.userData.orbitY = (Math.random() - 0.5) * 40 - 40;
         group.userData.isExplodedVisible = true;
@@ -745,7 +916,8 @@
         // ✅ 礼物明确标识
         group.userData.pickType = 'gift';
 
-        const localCenter = box3.getCenter(new THREE.Vector3()); localCenter.y += yOffset;
+        const localCenter = box3.getCenter(new THREE.Vector3());
+        localCenter.y += yOffset;
         group.userData.localCenter.copy(localCenter);
 
         group.userData.giftMessage = GIFT_TEXT_POOL[giftTextCursor % GIFT_TEXT_POOL.length];
@@ -754,21 +926,34 @@
       });
     }
 
-    // E. 精致星光灯带
+    // ================= 星光灯带 =================
     function createLightStrip() {
       const lightStripGroup = new THREE.Group();
-      const stripBottomY = -TREE_HEIGHT / 2 + 2; const stripTopY = TREE_HEIGHT / 2 - 5; const stripHeight = stripTopY - stripBottomY;
-      const radiusBottom = TREE_RADIUS + 2; const radiusTop = 4; const turns = 6;
+      const stripBottomY = -TREE_HEIGHT / 2 + 2;
+      const stripTopY = TREE_HEIGHT / 2 - 5;
+      const stripHeight = stripTopY - stripBottomY;
+      const radiusBottom = TREE_RADIUS + 2;
+      const radiusTop = 4;
+      const turns = 6;
       const lightCount = 250;
 
       const bulbGeo = new THREE.SphereGeometry(isMobile ? 0.1 : 0.15, 8, 8);
 
       for (let i = 0; i < lightCount; i++) {
-        const t = i / (lightCount - 1); const angle = t * turns * Math.PI * 2;
+        const t = i / (lightCount - 1);
+        const angle = t * turns * Math.PI * 2;
         const currentRadius = radiusBottom * (1 - t) + radiusTop * t;
         const y = stripBottomY + t * stripHeight;
-        const x = Math.cos(angle) * currentRadius; const z = Math.sin(angle) * currentRadius;
-        const bulbMat = new THREE.MeshStandardMaterial({ color: 0xffdd88, emissive: 0xffaa00, emissiveIntensity: 2.0, roughness: 0.3 });
+        const x = Math.cos(angle) * currentRadius;
+        const z = Math.sin(angle) * currentRadius;
+
+        const bulbMat = new THREE.MeshStandardMaterial({
+          color: 0xffdd88,
+          emissive: 0xffaa00,
+          emissiveIntensity: 2.0,
+          roughness: 0.3
+        });
+
         const bulb = new THREE.Mesh(bulbGeo, bulbMat);
         bulb.position.set(x, y, z);
         bulb.userData.blinkSpeed = 0.01 + Math.random() * 0.02;
@@ -777,15 +962,19 @@
         lightBulbs.push(bulb);
       }
 
-      const mainLight = new THREE.PointLight(0xffaa33, 2.0, 80); mainLight.position.set(0, 0, 0); lightStripGroup.add(mainLight);
+      const mainLight = new THREE.PointLight(0xffaa33, 2.0, 80);
+      mainLight.position.set(0, 0, 0);
+      lightStripGroup.add(mainLight);
+
       treeRoot.add(lightStripGroup);
       setupOrbitalData(lightStripGroup, 0.0001);
-      lightStripGroup.userData.isExplodedVisible = false; lightStripGroup.userData.pickType = 'other';
+      lightStripGroup.userData.isExplodedVisible = false;
+      lightStripGroup.userData.pickType = 'other';
       lightStripGroup.userData.localCenter.set(0, 0, 0);
     }
     createLightStrip();
 
-    // ================= 烟花粒子系统 =================
+    // ================= 烟花粒子系统（原样保留） =================
     function createFirework() {
       const particleCount = 150;
       const geometry = new THREE.BufferGeometry();
@@ -802,6 +991,7 @@
         colors[i * 3] = fireworkColor.r;
         colors[i * 3 + 1] = fireworkColor.g;
         colors[i * 3 + 2] = fireworkColor.b;
+
         const velocity = new THREE.Vector3((Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5));
         velocity.normalize().multiplyScalar(1.0 + Math.random() * 2.0);
         velocities.push(velocity);
@@ -833,12 +1023,14 @@
         const velocities = firework.userData.velocities;
         firework.userData.life -= 0.015;
         firework.material.opacity = firework.userData.life;
+
         for (let j = 0; j < velocities.length; j++) {
           velocities[j].y -= 0.03;
           positions[j * 3] += velocities[j].x;
           positions[j * 3 + 1] += velocities[j].y;
           positions[j * 3 + 2] += velocities[j].z;
         }
+
         firework.geometry.attributes.position.needsUpdate = true;
         if (firework.userData.life <= 0) {
           scene.remove(firework);
@@ -849,7 +1041,7 @@
       }
     }
 
-    // ================= 系统启动逻辑 =================
+    // ================= 系统启动逻辑（原样保留） =================
     const musicUrl = 'https://raw.githubusercontent.com/sun857979566-creator/christmas-tree/main/just%20love%20u.mp3';
     let sound = null;
 
@@ -861,13 +1053,13 @@
       const musicBtn = document.getElementById('music_toggle');
       musicBtn.classList.add('off');
 
-      audioLoader.load(musicUrl, function(buffer) {
+      audioLoader.load(musicUrl, function (buffer) {
         sound.setBuffer(buffer);
         sound.setLoop(true);
         sound.setVolume(0.5);
         sound.play();
         musicBtn.classList.remove('off');
-      }, undefined, function(err) {
+      }, undefined, function (err) {
         console.error("音乐加载失败", err);
       });
     }
@@ -880,14 +1072,14 @@
     const camWindow = document.getElementById('cam_window');
 
     startBtn.onclick = async () => {
-      if(startBtn.innerText === 'LOADING...') return;
+      if (startBtn.innerText === 'LOADING...') return;
       try {
         const audioCtx = THREE.AudioContext.getContext();
         if (audioCtx.state === 'suspended') audioCtx.resume();
         startBtn.innerText = 'INITIALIZING...';
         initMusic();
 
-        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`});
+        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
         hands.onResults(onAIResults);
         handLandmarker = hands;
@@ -921,7 +1113,7 @@
 
     async function processVideoFrame() {
       if (handLandmarker && videoElement.readyState >= 2) {
-        await handLandmarker.send({image: videoElement});
+        await handLandmarker.send({ image: videoElement });
       }
       requestAnimationFrame(processVideoFrame);
     }
@@ -950,7 +1142,7 @@
         }
         const currentGesture = detectGesture(landmarks);
         if (!isExploded && lastGesture === 'FIST' && currentGesture === 'OPEN') {
-          for(let i=0; i<5; i++) setTimeout(() => createFirework(), i * 200);
+          for (let i = 0; i < 5; i++) setTimeout(() => createFirework(), i * 200);
         }
         if (currentGesture !== 'BETWEEN') lastGesture = currentGesture;
       }
@@ -970,7 +1162,7 @@
       return 'BETWEEN';
     }
 
-    // ================= 交互逻辑 (含左右滑动) =================
+    // ================= 交互逻辑（原样 + 礼物二次点击爆开） =================
     let isDraggingCam = false;
     let camDragStartX = 0;
     let camDragStartY = 0;
@@ -1174,6 +1366,7 @@
       activeUUID = root.uuid;
       root.userData.pinned = true;
       scene.updateMatrixWorld(true);
+
       const r = getWorldRadius(root);
       const baseDist = isMobile ? 70 : 60;
       const dist = clamp(Math.max(baseDist, computeSafeDistance(r)), 10, camera.far - 80);
@@ -1198,7 +1391,7 @@
       }
     }
 
-    // ✅ 关键：文字出现后点击退出，礼物第二次点击爆开
+    // ✅ 关键：文字显示后点一下退出；礼物二次点击爆开
     window.addEventListener('pointerup', (event) => {
       if (isDraggingCam) return;
 
@@ -1247,11 +1440,12 @@
         return;
       }
 
-      if(activeUUID && roots[0].uuid === activeUUID && roots[0].userData.isTreeTop) return;
+      if (activeUUID && roots[0].uuid === activeUUID && roots[0].userData.isTreeTop) return;
 
       let chosen = roots.find(r => r.userData.pickType === 'gift');
       if (!chosen) chosen = roots[0];
 
+      // ✅ 第二次点击同一个礼物 -> 爆开
       if (activeUUID && chosen.uuid === activeUUID && chosen.userData.pickType === 'gift') {
         openGiftBox(chosen);
         return;
@@ -1272,6 +1466,7 @@
 
     function animate() {
       requestAnimationFrame(animate);
+
       const time = Date.now();
       lightBulbs.forEach(bulb => {
         const t = time * 0.005;
@@ -1285,7 +1480,7 @@
         camera.lookAt(0, 5, 0);
         if (camera.position.distanceTo(targetCameraPos) < 1.0) {
           isCameraMoving = false;
-          // ✅ 修复：如果有 pin（比如豹警官），别把 controls 又开回去
+          // ✅ 修复：pin 豹警官时，不要把 controls 又开回去
           controls.enabled = (activeUUID === null);
           controls.update();
         }
@@ -1301,12 +1496,14 @@
         if (obj.userData.pinned && obj.uuid === activeUUID) {
           if (obj.userData.isTreeTop) {
             alignLocalCenterToWorldPoint(obj, obj.userData.localCenter, obj.userData.inspectionPos);
-            let bigScale = obj.userData.originScale.clone().multiplyScalar(obj.userData.currentInspectionScale);
+            const bigScale = obj.userData.originScale.clone().multiplyScalar(obj.userData.currentInspectionScale);
             obj.scale.lerp(bigScale, 0.12);
             return;
           }
+
           const dist = obj.userData.pinnedDist || (isMobile ? 70 : 60);
           const focusPos = getFocusPosByDistance(dist);
+
           if (obj.userData.pickType === 'photo') obj.lookAt(camera.position);
           else obj.rotation.copy(obj.userData.pinnedRot);
 
@@ -1317,6 +1514,7 @@
           else if (obj.geometry && obj.geometry.type === 'PlaneGeometry') {
             bigScale = obj.userData.explodedScale.clone().multiplyScalar(obj.userData.currentInspectionScale * 2.0);
           } else bigScale = obj.userData.originScale.clone().multiplyScalar(2.0);
+
           obj.scale.lerp(bigScale, 0.12);
           return;
         }
@@ -1334,9 +1532,10 @@
           return;
         }
 
-        let targetScale;
-        if (isExploded) targetScale = obj.userData.isExplodedVisible ? obj.userData.explodedScale : new THREE.Vector3(0.001, 0.001, 0.001);
-        else targetScale = obj.userData.originScale;
+        const targetScale = isExploded
+          ? (obj.userData.isExplodedVisible ? obj.userData.explodedScale : new THREE.Vector3(0.001, 0.001, 0.001))
+          : obj.userData.originScale;
+
         obj.scale.lerp(targetScale, lerpSpeed);
 
         if (isExploded) {
@@ -1345,7 +1544,8 @@
           const targetZ = Math.sin(obj.userData.orbitAngle) * obj.userData.orbitRadius;
           const orbitalPos = new THREE.Vector3(targetX, obj.userData.orbitY, targetZ);
           obj.position.lerp(orbitalPos, lerpSpeed);
-          obj.rotation.x += obj.userData.floatSpeed.x; obj.rotation.y += obj.userData.floatSpeed.y;
+          obj.rotation.x += obj.userData.floatSpeed.x;
+          obj.rotation.y += obj.userData.floatSpeed.y;
         } else {
           obj.position.lerp(obj.userData.originPos, lerpSpeed);
           obj.quaternion.slerp(new THREE.Quaternion().setFromEuler(obj.userData.originRot), lerpSpeed);
@@ -1362,6 +1562,7 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       updateCameraPosition();
     });
+
     updateCameraPosition();
     animate();
 
@@ -1390,4 +1591,5 @@
     });
   </script>
 </body>
+
 </html>
