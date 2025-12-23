@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>我的3D照片圣诞树 - 结婚两周年完美画廊版</title>
+
   <style>
     body {
       margin: 0;
@@ -36,25 +37,35 @@
     #start_btn {
       padding: 15px 40px;
       font-size: 18px;
-      color: #444;
-      background: #222;
-      border: 1px solid #444;
+      color: #fff;
+      /* ✅ 文字白色 */
+      background: #ff69b4;
+      /* ✅ 粉色同 Happy */
+      border: 1px solid #ff69b4;
+      /* ✅ 边框粉色 */
       border-radius: 50px;
       font-weight: bold;
       pointer-events: none;
       transition: all 0.4s ease;
       text-transform: uppercase;
       margin-top: 20px;
+      opacity: 0.7;
+      /* 未就绪时稍微暗一点 */
     }
 
     #start_btn.ready {
-      color: #000;
-      background: #00ffff;
-      border-color: #00ffff;
-      box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+      color: #fff;
+      /* ✅ 文字白色 */
+      background: #ff69b4;
+      /* ✅ 粉色同 Happy */
+      border-color: #ff69b4;
+      box-shadow: 0 0 30px rgba(255, 105, 180, 0.65);
+      /* ✅ 粉色光晕 */
       cursor: pointer;
       pointer-events: auto;
+      opacity: 1;
     }
+
 
     #cam_window {
       position: absolute;
@@ -142,27 +153,22 @@
       font-family: 'Arial Rounded MT Bold', sans-serif;
     }
 
-    /* ===================== ✅ 必须：彩纸层不挡任何点击 + 默认隐藏 ===================== */
+    /* ✅ 彩纸层：不挡点击 */
     #confetti_layer {
       position: fixed;
       inset: 0;
       z-index: 2800;
       pointer-events: none;
-      /* ✅ 关键：不挡 banner/按钮点击 */
       overflow: hidden;
       display: none;
-      /* ✅ 关键：默认不要显示 */
     }
 
-    /* ===================== DOM 彩纸（爆开后慢慢飘远 + 渐隐，顺滑版） ===================== */
     .confetti-piece {
       position: absolute;
       border-radius: 2px;
       opacity: 0;
       transform: translate3d(-50%, -50%, 0) rotate(0deg);
       will-change: transform, opacity;
-      box-shadow: none;
-      /* ✅ 减卡 */
       filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
       backface-visibility: hidden;
     }
@@ -177,14 +183,12 @@
         opacity: 1;
       }
 
-      /* 爆开：主要扩散在 35% 前完成，但不“冲” */
       35% {
         opacity: 1;
         transform:
           translate3d(calc(-50% + var(--dxA)), calc(-50% + var(--dyA)), 0) rotate(var(--rotA)) scale(1);
       }
 
-      /* 漂远：后半段慢慢飘，最后渐隐 */
       100% {
         opacity: 0;
         transform:
@@ -192,7 +196,7 @@
       }
     }
 
-    /* ===================== 礼物文字（猪猪体炫酷） ===================== */
+    /* 猪猪体（你本地有 fonts/zhuzhuti.ttf 就会生效，没有就降级） */
     @font-face {
       font-family: "ZhuZhuTi";
       src: url("fonts/zhuzhuti.ttf") format("truetype");
@@ -288,6 +292,46 @@
         filter: drop-shadow(0 0 16px rgba(0, 255, 255, 0.45));
       }
     }
+
+    /* ✅ 无摄像头调试：放烟花按钮 */
+    #firework_btn {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 2600;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(0, 0, 0, 0.35);
+      color: rgba(255, 255, 255, 0.92);
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 18px rgba(0, 255, 255, 0.12);
+      display: none;
+    }
+
+    #firework_btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    #firework_hint {
+      position: fixed;
+      right: 18px;
+      bottom: 64px;
+      z-index: 2600;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      display: none;
+      text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+    }
+
+    /* 不显示放烟花按钮和提示 */
+    #firework_btn,
+    #firework_hint {
+      display: none !important;
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
@@ -331,7 +375,7 @@
     <div
       style="font-size: 2rem; color: #ff69b4; text-shadow: 0 0 20px #ff69b4; font-family: 'Arial Rounded MT Bold', sans-serif;">
       Happy Anniversary</div>
-    <div style="color: #888; margin-top: 10px;">Gesture Control System Loading...</div>
+    <div style="display:none;">Gesture Control System Loading...</div>
     <button id="start_btn">LOADING...</button>
   </div>
 
@@ -340,9 +384,11 @@
   <div id="cam_window"><canvas id="hand_canvas"></canvas></div>
   <video id="raw_video" playsinline webkit-playsinline></video>
 
-  <!-- ✅ 新增：彩纸层（不挡点击） + 礼物文字层 -->
   <div id="confetti_layer"></div>
   <div id="gift_text"></div>
+
+  <div id="firework_hint">按 <b>F</b> 或 <b>Space</b> / 点按钮放烟花</div>
+  <button id="firework_btn">🎆 放烟花</button>
 
   <script type="module">
     import * as THREE from 'three';
@@ -350,17 +396,35 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-    // 调试开关
+    // ================= 0. 调试开关 =================
     const DEBUG_HITBOX = false;
 
-    // 核心布局数据
+    // ================= 1. 布局数据 =================
     const FIXED_LAYOUT = [
-      { "name": "giftbox4.glb", "pos": [10.33, -32, 59.09], "rot": 1.66 }, { "name": "giftbox1.glb", "pos": [21.06, -32, -2.97], "rot": 1.06 }, { "name": "giftbox3.glb", "pos": [10.07, -32, 39.08], "rot": 2.33 }, { "name": "giftbox3.glb", "pos": [6.9, -32, 63.75], "rot": 1.26 }, { "name": "giftbox2.glb", "pos": [23.1, -32, 48.07], "rot": 1.23 }, { "name": "giftbox1.glb", "pos": [18.68, -32, 0.85], "rot": 3.13 }, { "name": "giftbox4.glb", "pos": [1, -32, 13.04], "rot": 1.58 }, { "name": "giftbox1.glb", "pos": [-10.65, -32, -14.06], "rot": 0.05 }, { "name": "giftbox4.glb", "pos": [30.9, -32, 12.76], "rot": 1.51 }, { "name": "giftbox5.glb", "pos": [-16.37, -32, 66.98], "rot": 0.73 }, { "name": "giftbox2.glb", "pos": [-44.31, -32, 52.75], "rot": 0.14 }, { "name": "giftbox1.glb", "pos": [4.98, -32, 6.17], "rot": 1.06 }, { "name": "giftbox4.glb", "pos": [3.07, -32, 39.17], "rot": 0.33 }, { "name": "giftbox5.glb", "pos": [22.66, -32, 50.69], "rot": 2.3 }, { "name": "giftbox2.glb", "pos": [19.69, -32, -18.06], "rot": 2.8 }, { "name": "giftbox3.glb", "pos": [39.87, -32, 22.91], "rot": 1.87 }, { "name": "giftbox4.glb", "pos": [-25.88, -32, 43.69], "rot": 1.18 }, { "name": "giftbox2.glb", "pos": [33.85, -32, -3.28], "rot": 2.15 }, { "name": "giftbox2.glb", "pos": [18.23, -32, 22.29], "rot": 1.63 }
+      { "name": "giftbox4.glb", "pos": [10.33, -32, 59.09], "rot": 1.66 },
+      { "name": "giftbox1.glb", "pos": [21.06, -32, -2.97], "rot": 1.06 },
+      { "name": "giftbox3.glb", "pos": [10.07, -32, 39.08], "rot": 2.33 },
+      { "name": "giftbox3.glb", "pos": [6.9, -32, 63.75], "rot": 1.26 },
+      { "name": "giftbox2.glb", "pos": [23.1, -32, 48.07], "rot": 1.23 },
+      { "name": "giftbox1.glb", "pos": [18.68, -32, 0.85], "rot": 3.13 },
+      { "name": "giftbox4.glb", "pos": [1, -32, 13.04], "rot": 1.58 },
+      { "name": "giftbox1.glb", "pos": [-10.65, -32, -14.06], "rot": 0.05 },
+      { "name": "giftbox4.glb", "pos": [30.9, -32, 12.76], "rot": 1.51 },
+      { "name": "giftbox5.glb", "pos": [-16.37, -32, 66.98], "rot": 0.73 },
+      { "name": "giftbox2.glb", "pos": [-44.31, -32, 52.75], "rot": 0.14 },
+      { "name": "giftbox1.glb", "pos": [4.98, -32, 6.17], "rot": 1.06 },
+      { "name": "giftbox4.glb", "pos": [3.07, -32, 39.17], "rot": 0.33 },
+      { "name": "giftbox5.glb", "pos": [22.66, -32, 50.69], "rot": 2.3 },
+      { "name": "giftbox2.glb", "pos": [19.69, -32, -18.06], "rot": 2.8 },
+      { "name": "giftbox3.glb", "pos": [39.87, -32, 22.91], "rot": 1.87 },
+      { "name": "giftbox4.glb", "pos": [-25.88, -32, 43.69], "rot": 1.18 },
+      { "name": "giftbox2.glb", "pos": [33.85, -32, -3.28], "rot": 2.15 },
+      { "name": "giftbox2.glb", "pos": [18.23, -32, 22.29], "rot": 1.63 }
     ];
 
+    // ================= 2. 场景/相机/渲染器 =================
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
-    scene.environment = scene.background;
     scene.fog = new THREE.FogExp2(0x000000, 0.0015);
 
     const treeRoot = new THREE.Group();
@@ -383,20 +447,25 @@
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.useLegacyLights = false;
+
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; controls.dampingFactor = 0.05; controls.autoRotate = false;
-    controls.minDistance = 1; controls.maxDistance = 1000; controls.target.set(0, 5, 0);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.autoRotate = false;
+    controls.minDistance = 1;
+    controls.maxDistance = 1000;
+    controls.target.set(0, 5, 0);
 
-    // ================= 全局变量 =================
+    // ================= 3. 全局变量 =================
     const floatingObjects = [];
     const lightBulbs = [];
 
-    // --- 去重播放列表 ---
     const uniquePhotoPlaylist = [];
     const seenPhotoUrls = new Set();
 
@@ -419,7 +488,6 @@
     let isDragMove = false;
     const touchStartPos = new THREE.Vector2();
 
-    const fireworks = [];
     let handLandmarker = null;
     let lastGesture = 'UNKNOWN';
     const HAND_CONNECTIONS = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], [10, 11], [11, 12], [0, 13], [13, 14], [14, 15], [15, 16], [0, 17], [17, 18], [18, 19], [19, 20], [5, 9], [9, 13], [13, 17]];
@@ -501,7 +569,7 @@
       obj.position.add(delta);
     }
 
-    // ================= 背景星空 =================
+    // ================= 4. 背景星空 =================
     function createGlowTexture() {
       const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
       const ctx = canvas.getContext('2d');
@@ -519,6 +587,7 @@
     const starsPos = new Float32Array(starsCount * 3);
     const starsColors = new Float32Array(starsCount * 3);
     const colorObj = new THREE.Color();
+
     for (let i = 0; i < starsCount * 3; i++) starsPos[i] = (Math.random() - 0.5) * 1500;
 
     for (let i = 0; i < starsCount; i++) {
@@ -526,6 +595,7 @@
       if (tone > 0.8) colorObj.setHex(0xffd700);
       else if (tone > 0.5) colorObj.setHex(0x88ccff);
       else colorObj.setHex(0xffffff);
+
       starsColors[i * 3] = colorObj.r;
       starsColors[i * 3 + 1] = colorObj.g;
       starsColors[i * 3 + 2] = colorObj.b;
@@ -534,6 +604,7 @@
     const starGeo = new THREE.BufferGeometry();
     starGeo.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
     starGeo.setAttribute('color', new THREE.BufferAttribute(starsColors, 3));
+
     const starMat = new THREE.PointsMaterial({
       size: 2.5,
       map: createGlowTexture(),
@@ -542,16 +613,18 @@
       opacity: 0.8,
       blending: THREE.AdditiveBlending
     });
+
     const starMesh = new THREE.Points(starGeo, starMat);
     scene.add(starMesh);
 
-    // ================= 树（构建逻辑） =================
+    // ================= 5. 树（照片/彩球/灯带） =================
     const TOTAL_LEAVES = 600;
     const TREE_HEIGHT = 60;
     const TREE_RADIUS = 20;
 
     const photoFiles = [];
     for (let i = 0; i <= 61; i++) photoFiles.push(i === 0 ? 'photos/A.jpg' : `photos/A (${i}).jpg`);
+
     const leafList = [...photoFiles];
     while (leafList.length < TOTAL_LEAVES) leafList.push(photoFiles[Math.floor(Math.random() * photoFiles.length)]);
     leafList.sort(() => Math.random() - 0.5);
@@ -595,8 +668,10 @@
       mesh.userData.inspectionBaseScale = 3.0;
       mesh.userData.currentInspectionScale = 3.0;
 
-      // ✅ 修复：不要把所有 Group 默认当 gift（豹警官是 Group）
-      mesh.userData.pickType = (mesh.geometry && mesh.geometry.type === 'PlaneGeometry') ? 'photo' : 'other';
+      // pickType
+      mesh.userData.pickType = (mesh.type === 'Group') ? 'gift'
+        : (mesh.geometry && mesh.geometry.type === 'PlaneGeometry') ? 'photo'
+          : 'other';
 
       mesh.userData.isTreeTop = false;
       mesh.userData.bottomCenterLocal = null;
@@ -622,25 +697,29 @@
         const baseSize = 3;
         let w = imgAspect > 1 ? baseSize * imgAspect : baseSize;
         let h = imgAspect > 1 ? baseSize : baseSize / imgAspect;
+
         const mesh = new THREE.Mesh(
           new THREE.PlaneGeometry(w, h),
           new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true })
         );
+
         const h_norm = Math.pow(i / TOTAL_LEAVES, 0.5);
         const y = (TREE_HEIGHT / 2) - (h_norm * TREE_HEIGHT);
         const r = (TREE_RADIUS * h_norm) + (Math.random() * 5);
         const theta = Math.random() * Math.PI * 2;
+
         mesh.position.set(r * Math.cos(theta), y, r * Math.sin(theta));
         mesh.lookAt(0, y, 0);
         mesh.rotateX(-Math.PI / 2);
         mesh.rotateX(-(Math.random() * 0.5 + 0.3));
         mesh.rotateY((Math.random() - 0.5) * 0.5);
         mesh.rotateZ(Math.PI + (Math.random() - 0.5) * 0.5);
-        setupOrbitalData(mesh, 3.0, file);
 
+        setupOrbitalData(mesh, 3.0, file);
         mesh.userData.inspectionBaseScale = 1.5;
         mesh.userData.currentInspectionScale = 1.5;
         mesh.userData.localCenter.set(0, 0, 0);
+
         treeRoot.add(mesh);
       });
     });
@@ -649,284 +728,34 @@
     const colors = [0xDC143C, 0xFFD700, 0x228B22, 0xE0E0E0];
     const baseSphereGeo = new THREE.SphereGeometry(0.3, 32, 32);
     const sphereCount = 450;
+
     for (let i = 0; i < sphereCount; i++) {
       const sphere = new THREE.Mesh(
         baseSphereGeo,
         new THREE.MeshStandardMaterial({
           color: colors[Math.floor(Math.random() * colors.length)],
-          metalness: 0.7, roughness: 0.35, envMapIntensity: 1.0
+          metalness: 0.7,
+          roughness: 0.35,
+          envMapIntensity: 1.0
         })
       );
+
       const scale = Math.random() * 1.2 + 0.8;
       sphere.scale.set(scale, scale, scale);
+
       const h_norm = Math.pow(i / sphereCount, 0.7);
       const y = (TREE_HEIGHT / 2) - (h_norm * TREE_HEIGHT);
       const r = (TREE_RADIUS * h_norm) + (Math.random() - 0.5) * 4;
       const theta = Math.random() * Math.PI * 2;
+
       sphere.position.set(r * Math.cos(theta), y, r * Math.sin(theta));
+
       setupOrbitalData(sphere, 2.5);
       sphere.userData.localCenter.set(0, 0, 0);
       treeRoot.add(sphere);
     }
 
-    // ================= 豹警官 =================
-    const gltfLoader = new GLTFLoader();
-
-    function createCuteTextSprite(message) {
-      const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-      canvas.width = 1024; canvas.height = 256;
-      ctx.font = `bold 60px "YouYuan", "Wawati SC", "HanyiSenty", "Comic Sans MS", "Microsoft YaHei", sans-serif`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.strokeStyle = 'white'; ctx.lineWidth = 8;
-      ctx.strokeText(message, canvas.width / 2, canvas.height / 2);
-      ctx.fillStyle = '#FF69B4'; ctx.fillText(message, canvas.width / 2, canvas.height / 2);
-      const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
-      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
-      sprite.scale.set(12, 3, 1);
-      return sprite;
-    }
-
-    function loadClawhauserGLB(url) {
-      gltfLoader.load(url, (gltf) => {
-        const model = gltf.scene;
-        const root = new THREE.Group();
-        root.add(model);
-        model.scale.set(10, 10, 10);
-        model.rotation.set(-THREE.MathUtils.degToRad(20), 0, Math.PI / 2);
-        model.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
-        root.position.set(0, TREE_HEIGHT / 2, 0);
-        setupOrbitalData(root, 2.0);
-
-        // ✅ 保险：明确不是 gift
-        root.userData.pickType = 'other';
-
-        root.userData.isExplodedVisible = true; root.userData.isTreeTop = true;
-        root.userData.yawOffset = -THREE.MathUtils.degToRad(18); root.userData.orbitRadius = 80;
-        root.userData.orbitY = TREE_HEIGHT / 2 + 10; root.userData.treeFacingSet = false;
-
-        treeRoot.add(root);
-        scene.updateMatrixWorld(true);
-
-        const b = new THREE.Box3().setFromObject(root);
-        const center = new THREE.Vector3(); b.getCenter(center);
-        const bottomCenterWorld = new THREE.Vector3((b.min.x + b.max.x) / 2, b.min.y, (b.min.z + b.max.z) / 2);
-        root.userData.bottomCenterLocal = root.worldToLocal(bottomCenterWorld.clone());
-        root.userData.localCenter.copy(root.worldToLocal(center.clone()));
-
-        // 胸口判定框
-        const hitGeo = new THREE.BoxGeometry(0.5, 0.6, 0.4);
-        const hitMat = new THREE.MeshBasicMaterial({
-          visible: true,
-          transparent: true,
-          opacity: DEBUG_HITBOX ? 0.5 : 0.0,
-          depthWrite: false,
-          side: THREE.DoubleSide
-        });
-        const chestHitbox = new THREE.Mesh(hitGeo, hitMat);
-        chestHitbox.position.set(0, 1.3, 0.4);
-        chestHitbox.name = "ChestHitbox";
-        chestHitbox.userData.isHitbox = true;
-        model.add(chestHitbox);
-
-        // 文字
-        const textSprite = createCuteTextSprite("老婆，两周年结婚快乐");
-        textSprite.position.set(0, 13.0, 0);
-        textSprite.visible = false;
-        textSprite.name = "AnniversaryText";
-        root.add(textSprite);
-
-      }, undefined, (err) => console.log("GLB error", err));
-    }
-    loadClawhauserGLB('clawhauser.glb');
-
-    // ================= 礼物文字池（一个逢考必过，其余随机） =================
-    const GIFT_TEXT_POOL = [
-      "CPA必过✍️",
-      "圣诞快乐🎄",
-      "📚毛选为你加油打气",
-      "心想事成✨",
-      "万事顺遂～",
-      "快乐加倍，烦恼清零",
-      "今日份幸运已到账🌟",
-      "平安喜乐，所愿皆得",
-      "甜甜蜜蜜，幸福爆棚",
-      "欧气满满，锦鲤附体",
-      "暴富暴美暴开心",
-      "愿你闪闪发光"
-    ];
-    for (let i = GIFT_TEXT_POOL.length - 1; i > 0; i--) {
-      const j = (Math.random() * (i + 1)) | 0;
-      [GIFT_TEXT_POOL[i], GIFT_TEXT_POOL[j]] = [GIFT_TEXT_POOL[j], GIFT_TEXT_POOL[i]];
-    }
-    let giftTextCursor = 0;
-
-    // ================= DOM 彩纸 + 礼物文字 =================
-    const confettiLayer = document.getElementById('confetti_layer');
-    const giftTextEl = document.getElementById('gift_text');
-
-    // ✅ 保险：任何情况下默认隐藏，绝不挡 banner
-    if (confettiLayer) confettiLayer.style.display = 'none';
-
-    function createDomConfettiBurst(durationMs = 3800) {
-      if (!confettiLayer) return;
-
-      confettiLayer.style.display = 'block';
-      confettiLayer.innerHTML = '';
-
-      const cx = window.innerWidth * 0.5;
-      const cy = window.innerHeight * 0.5;
-
-      const colors = ['#ff2b2b', '#2aff6a', '#ffd700', '#ffffff', '#00ffff'];
-
-      // ✅ 控制数量：更顺滑
-      const count = (window.innerWidth < 768) ? 95 : 140;
-
-      for (let i = 0; i < count; i++) {
-        const p = document.createElement('div');
-        p.className = 'confetti-piece';
-        p.style.left = cx + 'px';
-        p.style.top = cy + 'px';
-
-        const angle = Math.random() * Math.PI * 2;
-
-        // 第一阶段：爆开扩散（不冲太快）
-        const rA = 110 + Math.random() * 210;  // 110~320
-
-        // 第二阶段：慢慢飘远（更远但更慢）
-        const rB = rA + 190 + Math.random() * 260; // +190~+450
-
-        // 整体轻微上浮（不会“上去又下来”）
-        const floatUpA = -(20 + Math.random() * 90);   // -20~-110
-        const floatUpB = floatUpA - (20 + Math.random() * 100);
-
-        // 漂移（让它像空气中飘散）
-        const driftX = (Math.random() - 0.5) * 150;
-        const driftY = (Math.random() - 0.5) * 130;
-
-        const dxA = Math.cos(angle) * rA;
-        const dyA = Math.sin(angle) * rA + floatUpA;
-
-        const dxB = Math.cos(angle) * rB + driftX;
-        const dyB = Math.sin(angle) * rB + floatUpB + driftY;
-
-        const rotA = (Math.random() * 520 - 260) + 'deg';
-        const rotB = (Math.random() * 900 - 450) + 'deg';
-
-        p.style.setProperty('--dxA', dxA + 'px');
-        p.style.setProperty('--dyA', dyA + 'px');
-        p.style.setProperty('--dxB', dxB + 'px');
-        p.style.setProperty('--dyB', dyB + 'px');
-        p.style.setProperty('--rotA', rotA);
-        p.style.setProperty('--rotB', rotB);
-
-        const w = 6 + Math.random() * 14;
-        const h = 4 + Math.random() * 10;
-        p.style.width = w + 'px';
-        p.style.height = h + 'px';
-
-        p.style.background = colors[(Math.random() * colors.length) | 0];
-
-        const delay = Math.random() * 90; // 0~90ms
-        p.style.animation = `confettiFloatOut ${durationMs}ms linear ${delay}ms forwards`;
-
-        confettiLayer.appendChild(p);
-      }
-
-      setTimeout(() => {
-        confettiLayer.innerHTML = '';
-        confettiLayer.style.display = 'none';
-      }, durationMs + 200);
-    }
-
-    function showGiftText(msg) {
-      if (!giftTextEl) return;
-      let html = msg;
-      const idx1 = msg.indexOf('，');
-      const idx2 = msg.indexOf(',');
-      const idx = idx1 >= 0 ? idx1 : idx2;
-      if (idx >= 0) html = msg.slice(0, idx + 1) + "<br>" + msg.slice(idx + 1);
-
-      giftTextEl.innerHTML = html;
-      giftTextEl.style.display = 'block';
-
-      // 重触发动画
-      giftTextEl.style.animation = 'none';
-      void giftTextEl.offsetHeight;
-      giftTextEl.style.animation = '';
-    }
-
-    function hideGiftText() {
-      if (!giftTextEl) return;
-      giftTextEl.style.display = 'none';
-    }
-
-    function openGiftBox(giftRoot) {
-      if (!giftRoot || giftRoot.userData.opened) return;
-      giftRoot.userData.opened = true;
-
-      // ✅ 只彩纸 + 文字，无音效
-      createDomConfettiBurst(3800);
-
-      // 移除对象
-      const idx = floatingObjects.findIndex(o => o.uuid === giftRoot.uuid);
-      if (idx !== -1) floatingObjects.splice(idx, 1);
-      if (activeUUID === giftRoot.uuid) unpinCurrent();
-      scene.remove(giftRoot);
-
-      const msg = giftRoot.userData.giftMessage || "圣诞快乐！";
-      setTimeout(() => showGiftText(msg), 1700);
-    }
-
-    // ================= 礼物盒 =================
-    const giftFiles = ['giftbox1.glb', 'giftbox2.glb', 'giftbox3.glb', 'giftbox4.glb', 'giftbox5.glb'];
-    const loadedModels = {};
-    let loadCount = 0;
-    giftFiles.forEach(fileName => {
-      gltfLoader.load(
-        fileName,
-        (gltf) => { loadedModels[fileName] = gltf.scene; checkLoadFinish(); },
-        undefined,
-        () => { console.warn(fileName + " 加载失败"); checkLoadFinish(); }
-      );
-    });
-    function checkLoadFinish() { loadCount++; if (loadCount === giftFiles.length) spawnFixedBoxes(); }
-
-    function spawnFixedBoxes() {
-      FIXED_LAYOUT.forEach(data => {
-        const template = loadedModels[data.name]; if (!template) return;
-        const clone = template.clone(true); clone.scale.set(15.0, 15.0, 15.0);
-
-        const box3 = new THREE.Box3().setFromObject(clone);
-        const yOffset = -box3.min.y;
-
-        const group = new THREE.Group();
-        clone.position.y = yOffset;
-        group.add(clone);
-
-        group.position.set(data.pos[0], data.pos[1], data.pos[2]);
-        group.rotation.y = data.rot;
-
-        group.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
-        scene.add(group);
-
-        setupOrbitalData(group, 1.5);
-        group.userData.orbitY = (Math.random() - 0.5) * 40 - 40;
-        group.userData.isExplodedVisible = true;
-
-        // ✅ 礼物明确标识
-        group.userData.pickType = 'gift';
-
-        const localCenter = box3.getCenter(new THREE.Vector3());
-        localCenter.y += yOffset;
-        group.userData.localCenter.copy(localCenter);
-
-        group.userData.giftMessage = GIFT_TEXT_POOL[giftTextCursor % GIFT_TEXT_POOL.length];
-        giftTextCursor++;
-        group.userData.opened = false;
-      });
-    }
-
-    // ================= 星光灯带 =================
+    // C. 精致星光灯带
     function createLightStrip() {
       const lightStripGroup = new THREE.Group();
       const stripBottomY = -TREE_HEIGHT / 2 + 2;
@@ -958,6 +787,7 @@
         bulb.position.set(x, y, z);
         bulb.userData.blinkSpeed = 0.01 + Math.random() * 0.02;
         bulb.userData.blinkOffset = Math.random() * 100;
+
         lightStripGroup.add(bulb);
         lightBulbs.push(bulb);
       }
@@ -974,74 +804,701 @@
     }
     createLightStrip();
 
-    // ================= 烟花粒子系统（原样保留） =================
-    function createFirework() {
-      const particleCount = 150;
-      const geometry = new THREE.BufferGeometry();
-      const positions = new Float32Array(particleCount * 3);
-      const colors = new Float32Array(particleCount * 3);
-      const velocities = [];
-      const fireworkColor = new THREE.Color();
-      fireworkColor.setHSL(Math.random(), 1.0, 0.6);
+    // ================= 6. 豹警官（保持原逻辑：单独放大/单独旋转） =================
+    const gltfLoader = new GLTFLoader();
 
-      for (let i = 0; i < particleCount; i++) {
-        positions[i * 3] = 0;
-        positions[i * 3 + 1] = 40;
-        positions[i * 3 + 2] = 0;
-        colors[i * 3] = fireworkColor.r;
-        colors[i * 3 + 1] = fireworkColor.g;
-        colors[i * 3 + 2] = fireworkColor.b;
+    function createCuteTextSprite(message) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 1024;
+      canvas.height = 256;
 
-        const velocity = new THREE.Vector3((Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5));
-        velocity.normalize().multiplyScalar(1.0 + Math.random() * 2.0);
-        velocities.push(velocity);
+      ctx.font = `bold 60px "YouYuan","Wawati SC","HanyiSenty","Comic Sans MS","Microsoft YaHei",sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 8;
+      ctx.strokeText(message, canvas.width / 2, canvas.height / 2);
+
+      ctx.fillStyle = '#FF69B4';
+      ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+      sprite.scale.set(12, 3, 1);
+      return sprite;
+    }
+
+    function loadClawhauserGLB(url) {
+      gltfLoader.load(url, (gltf) => {
+        const model = gltf.scene;
+        const root = new THREE.Group();
+        root.add(model);
+
+        model.scale.set(10, 10, 10);
+        model.rotation.set(-THREE.MathUtils.degToRad(20), 0, Math.PI / 2);
+
+        model.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+
+        root.position.set(0, TREE_HEIGHT / 2, 0);
+        setupOrbitalData(root, 2.0);
+        root.userData.isExplodedVisible = true;
+        root.userData.isTreeTop = true;
+
+        root.userData.yawOffset = -THREE.MathUtils.degToRad(18);
+        root.userData.orbitRadius = 80;
+        root.userData.orbitY = TREE_HEIGHT / 2 + 10;
+        root.userData.treeFacingSet = false;
+
+        treeRoot.add(root);
+        scene.updateMatrixWorld(true);
+
+        const b = new THREE.Box3().setFromObject(root);
+        const center = new THREE.Vector3();
+        b.getCenter(center);
+
+        const bottomCenterWorld = new THREE.Vector3(
+          (b.min.x + b.max.x) / 2,
+          b.min.y,
+          (b.min.z + b.max.z) / 2
+        );
+
+        root.userData.bottomCenterLocal = root.worldToLocal(bottomCenterWorld.clone());
+        root.userData.localCenter.copy(root.worldToLocal(center.clone()));
+
+        // 胸口判定框
+        const hitGeo = new THREE.BoxGeometry(0.5, 0.6, 0.4);
+        const hitMat = new THREE.MeshBasicMaterial({
+          visible: true,
+          transparent: true,
+          opacity: DEBUG_HITBOX ? 0.5 : 0.0,
+          depthWrite: false,
+          side: THREE.DoubleSide
+        });
+
+        const chestHitbox = new THREE.Mesh(hitGeo, hitMat);
+        chestHitbox.position.set(0, 1.3, 0.4);
+        chestHitbox.name = "ChestHitbox";
+        chestHitbox.userData.isHitbox = true;
+        model.add(chestHitbox);
+
+        // 文字
+        const textSprite = createCuteTextSprite("老婆，两周年结婚快乐");
+        textSprite.position.set(0, 13.0, 0);
+        textSprite.visible = false;
+        textSprite.name = "AnniversaryText";
+        root.add(textSprite);
+
+      }, undefined, (err) => console.log("GLB error", err));
+    }
+    loadClawhauserGLB('clawhauser.glb');
+
+    // ================= 7. 礼物 彩纸 + 文字 =================
+    const GIFT_TEXT_POOL = [
+      "逢考必过",
+      "圣诞快乐！",
+      "好运正在派送中",
+      "心想事成✨",
+      "万事顺遂～",
+      "快乐加倍，烦恼清零",
+      "今日份幸运已到账",
+      "平安喜乐，所愿皆得",
+      "甜甜蜜蜜，幸福爆棚",
+      "欧气满满，锦鲤附体",
+      "暴富暴美暴开心",
+      "愿你闪闪发光"
+    ];
+    for (let i = GIFT_TEXT_POOL.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [GIFT_TEXT_POOL[i], GIFT_TEXT_POOL[j]] = [GIFT_TEXT_POOL[j], GIFT_TEXT_POOL[i]];
+    }
+    let giftTextCursor = 0;
+
+    const confettiLayer = document.getElementById('confetti_layer');
+    const giftTextEl = document.getElementById('gift_text');
+
+    function createDomConfettiBurst(durationMs = 3800) {
+      confettiLayer.style.display = 'block';
+      confettiLayer.innerHTML = '';
+
+      const cx = window.innerWidth * 0.5;
+      const cy = window.innerHeight * 0.5;
+
+      const colors = ['#ff2b2b', '#2aff6a', '#ffd700', '#ffffff', '#00ffff'];
+      const count = (window.innerWidth < 768) ? 95 : 140;
+
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'confetti-piece';
+        p.style.left = cx + 'px';
+        p.style.top = cy + 'px';
+
+        const angle = Math.random() * Math.PI * 2;
+        const rA = 110 + Math.random() * 210;
+        const rB = rA + 190 + Math.random() * 260;
+
+        const floatUpA = -(20 + Math.random() * 90);
+        const floatUpB = floatUpA - (20 + Math.random() * 100);
+
+        const driftX = (Math.random() - 0.5) * 150;
+        const driftY = (Math.random() - 0.5) * 130;
+
+        const dxA = Math.cos(angle) * rA;
+        const dyA = Math.sin(angle) * rA + floatUpA;
+        const dxB = Math.cos(angle) * rB + driftX;
+        const dyB = Math.sin(angle) * rB + floatUpB + driftY;
+
+        const rotA = (Math.random() * 520 - 260) + 'deg';
+        const rotB = (Math.random() * 900 - 450) + 'deg';
+
+        p.style.setProperty('--dxA', dxA + 'px');
+        p.style.setProperty('--dyA', dyA + 'px');
+        p.style.setProperty('--dxB', dxB + 'px');
+        p.style.setProperty('--dyB', dyB + 'px');
+        p.style.setProperty('--rotA', rotA);
+        p.style.setProperty('--rotB', rotB);
+
+        const w = 6 + Math.random() * 14;
+        const h = 4 + Math.random() * 10;
+        p.style.width = w + 'px';
+        p.style.height = h + 'px';
+        p.style.background = colors[(Math.random() * colors.length) | 0];
+
+        const delay = Math.random() * 90;
+        p.style.animation = `confettiFloatOut ${durationMs}ms linear ${delay}ms forwards`;
+
+        confettiLayer.appendChild(p);
       }
 
-      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-      const particleMaterial = new THREE.PointsMaterial({
-        size: 2.0,
-        vertexColors: true,
-        blending: THREE.AdditiveBlending,
+      setTimeout(() => {
+        confettiLayer.innerHTML = '';
+        confettiLayer.style.display = 'none';
+      }, durationMs + 200);
+    }
+
+    function showGiftText(msg) {
+      let html = msg;
+      const idx1 = msg.indexOf('，');
+      const idx2 = msg.indexOf(',');
+      const idx = idx1 >= 0 ? idx1 : idx2;
+      if (idx >= 0) html = msg.slice(0, idx + 1) + "<br>" + msg.slice(idx + 1);
+
+      giftTextEl.innerHTML = html;
+      giftTextEl.style.display = 'block';
+
+      giftTextEl.style.animation = 'none';
+      void giftTextEl.offsetHeight;
+      giftTextEl.style.animation = '';
+    }
+    function hideGiftText() { giftTextEl.style.display = 'none'; }
+
+    function openGiftBox(giftRoot) {
+      if (!giftRoot || giftRoot.userData.opened) return;
+      giftRoot.userData.opened = true;
+
+      createDomConfettiBurst(3800);
+
+      const idx = floatingObjects.findIndex(o => o.uuid === giftRoot.uuid);
+      if (idx !== -1) floatingObjects.splice(idx, 1);
+      if (activeUUID === giftRoot.uuid) unpinCurrent();
+      scene.remove(giftRoot);
+
+      const msg = giftRoot.userData.giftMessage || "圣诞快乐！";
+      setTimeout(() => showGiftText(msg), 1700);
+    }
+
+    // ================= 8. 礼物盒 =================
+    const giftFiles = ['giftbox1.glb', 'giftbox2.glb', 'giftbox3.glb', 'giftbox4.glb', 'giftbox5.glb'];
+    const loadedModels = {};
+    let loadCount = 0;
+
+    giftFiles.forEach(fileName => {
+      gltfLoader.load(fileName, (gltf) => {
+        loadedModels[fileName] = gltf.scene;
+        checkLoadFinish();
+      }, undefined, () => {
+        console.warn(fileName + " 加载失败");
+        checkLoadFinish();
+      });
+    });
+
+    function checkLoadFinish() {
+      loadCount++;
+      if (loadCount === giftFiles.length) spawnFixedBoxes();
+    }
+
+    function spawnFixedBoxes() {
+      FIXED_LAYOUT.forEach(data => {
+        const template = loadedModels[data.name];
+        if (!template) return;
+
+        const clone = template.clone(true);
+        clone.scale.set(15.0, 15.0, 15.0);
+
+        const box3 = new THREE.Box3().setFromObject(clone);
+        const yOffset = -box3.min.y;
+
+        const group = new THREE.Group();
+        clone.position.y = yOffset;
+        group.add(clone);
+
+        group.position.set(data.pos[0], data.pos[1], data.pos[2]);
+        group.rotation.y = data.rot;
+
+        group.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+
+        scene.add(group);
+
+        setupOrbitalData(group, 1.5);
+        group.userData.orbitY = (Math.random() - 0.5) * 40 - 40;
+        group.userData.isExplodedVisible = true;
+        group.userData.pickType = 'gift';
+
+        const localCenter = box3.getCenter(new THREE.Vector3());
+        localCenter.y += yOffset;
+        group.userData.localCenter.copy(localCenter);
+
+        group.userData.giftMessage = GIFT_TEXT_POOL[giftTextCursor % GIFT_TEXT_POOL.length];
+        giftTextCursor++;
+        group.userData.opened = false;
+      });
+    }
+
+    // ================= 9. ✅ 精致烟花（屏幕内爆点 + 高分辨率纹理，减少像素感） =================
+    const fireworks = [];
+    const rockets = [];
+    let fireworkTexture = null;
+
+    function getFireworkTexture() {
+      if (fireworkTexture) return fireworkTexture;
+
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 256;
+      const ctx = c.getContext('2d');
+
+      const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 120);
+      g.addColorStop(0.00, 'rgba(255,255,255,1)');
+      g.addColorStop(0.06, 'rgba(255,255,255,0.98)');
+      g.addColorStop(0.16, 'rgba(255,240,200,0.85)');
+      g.addColorStop(0.38, 'rgba(255,170,90,0.35)');
+      g.addColorStop(1.00, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 256, 256);
+
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 140; i++) {
+        const x = 128 + (Math.random() - 0.5) * 170;
+        const y = 128 + (Math.random() - 0.5) * 170;
+        const r = 0.6 + Math.random() * 1.8;
+        ctx.fillStyle = `rgba(255,255,255,${0.05 + Math.random() * 0.08})`;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.minFilter = THREE.LinearMipMapLinearFilter;
+      t.magFilter = THREE.LinearFilter;
+      t.generateMipmaps = true;
+      t.anisotropy = renderer.capabilities.getMaxAnisotropy?.() || 1;
+
+      fireworkTexture = t;
+      return t;
+    }
+
+    function hslColor(h, s, l) { const c = new THREE.Color(); c.setHSL(h, s, l); return c; }
+    function rand(min, max) { return min + Math.random() * (max - min); }
+    const FIREWORK_TYPES = ['peony', 'chrysanthemum', 'willow'];
+
+    // 强制爆点在屏幕安全区域内（避免炸到看不到）
+    function pickVisibleBurstPoint() {
+      const dir = new THREE.Vector3();
+      camera.getWorldDirection(dir);
+
+      const right = new THREE.Vector3().crossVectors(dir, camera.up).normalize();
+      const up = new THREE.Vector3().copy(camera.up).normalize();
+
+      // ✅ 目标区域：更高（把“树附近高度”提高）
+      const near = new THREE.Vector3(
+        controls.target.x,
+        controls.target.y + 55,   // 原来 +30 太低，这里提高
+        controls.target.z
+      );
+
+      for (let attempt = 0; attempt < 40; attempt++) {
+        // ✅ 远一点 + 更高一点，天然就能炸到屏幕上方
+        const dist = rand(160, 280);
+
+        // 横向别太宽，避免出屏幕
+        const spreadX = rand(-0.55, 0.55);
+
+        // ✅ 关键：垂直偏移范围整体上移
+        // 原来 0.05~0.55 容易偏中间；现在 0.25~0.95 明显更靠上
+        const spreadY = rand(0.35, 1.10);
+
+        const base = camera.position.clone().add(dir.clone().multiplyScalar(dist));
+        base.add(right.clone().multiplyScalar(spreadX * dist * 0.55));
+        base.add(up.clone().multiplyScalar(spreadY * dist * 0.60));
+
+        // ✅ 仍然往树附近靠，但不要把高度拉回去太多
+        base.lerp(near, 0.18); // 原来 0.25 会把高度压低；这里减小
+
+        const ndc = base.clone().project(camera);
+        if (ndc.z < 0 || ndc.z > 1) continue;
+
+        // ✅ 放宽上边界（允许更靠近顶部）
+        if (Math.abs(ndc.x) < 0.80 && ndc.y > -0.60 && ndc.y < 0.98) {
+          return base;
+        }
+      }
+
+      // 兜底：直接在更高的位置
+      return new THREE.Vector3(controls.target.x, controls.target.y + 95, controls.target.z);
+    }
+
+
+    function createFirework() {
+      const type = FIREWORK_TYPES[(Math.random() * FIREWORK_TYPES.length) | 0];
+
+      const burstPos = pickVisibleBurstPoint();
+
+      const startPos = burstPos.clone();
+      startPos.y -= rand(35, 55);
+      startPos.x += rand(-8, 8);
+      startPos.z += rand(-8, 8);
+
+      const hue = Math.random();
+      const base = hslColor(hue, 1.0, 0.62);
+
+      const toTarget = burstPos.clone().sub(startPos);
+      const dist = toTarget.length();
+      toTarget.normalize();
+
+      const vel = toTarget.multiplyScalar(dist * 0.03);
+      vel.y += rand(0.65, 1.1);
+      vel.x += rand(-0.08, 0.08);
+      vel.z += rand(-0.08, 0.08);
+
+      const rocket = {
+        type,
+        baseColor: base,
+        pos: startPos.clone(),
+        vel,
+        target: burstPos.clone(),
+        trail: [],
+        trailMax: 28,
+        birth: performance.now()
+      };
+
+      const rocketGeo = new THREE.BufferGeometry();
+      rocketGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([rocket.pos.x, rocket.pos.y, rocket.pos.z]), 3));
+      rocketGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array([base.r, base.g, base.b]), 3));
+
+      const rocketMat = new THREE.PointsMaterial({
+        size: 5.8,
+        sizeAttenuation: true,
+        map: getFireworkTexture(),
         transparent: true,
         opacity: 1.0,
-        map: createGlowTexture(),
-        depthWrite: false
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        vertexColors: true
       });
 
-      const particleSystem = new THREE.Points(geometry, particleMaterial);
-      particleSystem.userData.velocities = velocities;
-      particleSystem.userData.life = 1.0;
-      scene.add(particleSystem);
-      fireworks.push(particleSystem);
+      rocket.points = new THREE.Points(rocketGeo, rocketMat);
+      scene.add(rocket.points);
+
+      const trailCount = rocket.trailMax;
+      const trailPos = new Float32Array(trailCount * 3);
+      const trailCol = new Float32Array(trailCount * 3);
+      const trailGeo = new THREE.BufferGeometry();
+      trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3));
+      trailGeo.setAttribute('color', new THREE.BufferAttribute(trailCol, 3));
+
+      const trailMat = new THREE.PointsMaterial({
+        size: 3.8,
+        sizeAttenuation: true,
+        map: getFireworkTexture(),
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        vertexColors: true
+      });
+
+      rocket.trailPoints = new THREE.Points(trailGeo, trailMat);
+      scene.add(rocket.trailPoints);
+
+      rockets.push(rocket);
+    }
+
+    function spawnBurst(rocket) {
+      const type = rocket.type;
+      const origin = rocket.target.clone();
+
+      const mainCount = (type === 'willow') ? 300 : (type === 'chrysanthemum' ? 260 : 240);
+      const glitterCount = (type === 'willow') ? 180 : 140;
+
+      const speedBase = (type === 'willow') ? 1.15 : (type === 'chrysanthemum' ? 1.45 : 1.55);
+      const lifeMs = (type === 'willow') ? 2800 : 2300;
+      const glitterLifeMs = (type === 'willow') ? 3000 : 2100;
+
+      function randomDirection() {
+        if (type === 'chrysanthemum') {
+          const u = Math.random();
+          const v = Math.random();
+          const theta = 2 * Math.PI * u;
+          const phi = Math.acos(2 * v - 1);
+          return new THREE.Vector3(
+            Math.sin(phi) * Math.cos(theta),
+            Math.cos(phi),
+            Math.sin(phi) * Math.sin(theta)
+          );
+        } else {
+          const dir = new THREE.Vector3(rand(-1, 1), rand(-0.35, 1), rand(-1, 1));
+          dir.normalize();
+          return dir;
+        }
+      }
+
+      // 主星
+      const geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(mainCount * 3);
+      const col = new Float32Array(mainCount * 3);
+      const velocities = new Array(mainCount);
+      const twinkles = new Float32Array(mainCount);
+
+      const gold = new THREE.Color(0xffd27d);
+      const base = rocket.baseColor.clone();
+
+      for (let i = 0; i < mainCount; i++) {
+        const dir = randomDirection();
+        const sp = speedBase * rand(0.78, 1.18);
+        if (type === 'willow') dir.y *= 0.45;
+
+        velocities[i] = dir.multiplyScalar(sp);
+
+        pos[i * 3] = origin.x;
+        pos[i * 3 + 1] = origin.y;
+        pos[i * 3 + 2] = origin.z;
+
+        const c = (Math.random() < 0.22) ? gold : base;
+        col[i * 3] = c.r;
+        col[i * 3 + 1] = c.g;
+        col[i * 3 + 2] = c.b;
+
+        twinkles[i] = rand(0.25, 1.0);
+      }
+
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+
+      const mat = new THREE.PointsMaterial({
+        size: (type === 'willow') ? 3.4 : 4.1,
+        sizeAttenuation: true,
+        map: getFireworkTexture(),
+        transparent: true,
+        opacity: 1.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        vertexColors: true
+      });
+
+      const points = new THREE.Points(geo, mat);
+      scene.add(points);
+
+      // 闪粉
+      const g2 = new THREE.BufferGeometry();
+      const pos2 = new Float32Array(glitterCount * 3);
+      const col2 = new Float32Array(glitterCount * 3);
+      const vel2 = new Array(glitterCount);
+      const tw2 = new Float32Array(glitterCount);
+
+      for (let i = 0; i < glitterCount; i++) {
+        const dir = randomDirection();
+        const sp = speedBase * rand(0.35, 0.82);
+        vel2[i] = dir.multiplyScalar(sp);
+
+        pos2[i * 3] = origin.x;
+        pos2[i * 3 + 1] = origin.y;
+        pos2[i * 3 + 2] = origin.z;
+
+        const cc = (Math.random() < 0.55) ? new THREE.Color(0xffffff) : gold;
+        col2[i * 3] = cc.r;
+        col2[i * 3 + 1] = cc.g;
+        col2[i * 3 + 2] = cc.b;
+
+        tw2[i] = rand(0.5, 1.0);
+      }
+
+      g2.setAttribute('position', new THREE.BufferAttribute(pos2, 3));
+      g2.setAttribute('color', new THREE.BufferAttribute(col2, 3));
+
+      const m2 = new THREE.PointsMaterial({
+        size: 2.2,
+        sizeAttenuation: true,
+        map: getFireworkTexture(),
+        transparent: true,
+        opacity: 1.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        vertexColors: true
+      });
+
+      const p2 = new THREE.Points(g2, m2);
+      scene.add(p2);
+
+      fireworks.push({
+        kind: 'main',
+        type,
+        points,
+        velocities,
+        twinkles,
+        birth: performance.now(),
+        lifeMs,
+        gravity: (type === 'willow') ? 0.016 : 0.024,
+        drag: (type === 'willow') ? 0.986 : 0.992
+      });
+
+      fireworks.push({
+        kind: 'glitter',
+        type,
+        points: p2,
+        velocities: vel2,
+        twinkles: tw2,
+        birth: performance.now(),
+        lifeMs: glitterLifeMs,
+        gravity: (type === 'willow') ? 0.018 : 0.026,
+        drag: 0.987
+      });
     }
 
     function updateFireworks() {
-      for (let i = fireworks.length - 1; i >= 0; i--) {
-        const firework = fireworks[i];
-        const positions = firework.geometry.attributes.position.array;
-        const velocities = firework.userData.velocities;
-        firework.userData.life -= 0.015;
-        firework.material.opacity = firework.userData.life;
+      const now = performance.now();
 
-        for (let j = 0; j < velocities.length; j++) {
-          velocities[j].y -= 0.03;
-          positions[j * 3] += velocities[j].x;
-          positions[j * 3 + 1] += velocities[j].y;
-          positions[j * 3 + 2] += velocities[j].z;
+      // 火箭阶段
+      for (let i = rockets.length - 1; i >= 0; i--) {
+        const r = rockets[i];
+
+        r.vel.multiplyScalar(0.992);
+        r.vel.y -= 0.008;
+
+        const toT = r.target.clone().sub(r.pos);
+        const d = toT.length();
+        if (d > 0.001) {
+          toT.normalize();
+          r.vel.add(toT.multiplyScalar(0.012));
         }
 
-        firework.geometry.attributes.position.needsUpdate = true;
-        if (firework.userData.life <= 0) {
-          scene.remove(firework);
-          firework.geometry.dispose();
-          firework.material.dispose();
+        r.pos.add(r.vel);
+
+        const arr = r.points.geometry.attributes.position.array;
+        arr[0] = r.pos.x; arr[1] = r.pos.y; arr[2] = r.pos.z;
+        r.points.geometry.attributes.position.needsUpdate = true;
+
+        r.trail.unshift(r.pos.clone());
+        if (r.trail.length > r.trailMax) r.trail.pop();
+
+        const tpos = r.trailPoints.geometry.attributes.position.array;
+        const tcol = r.trailPoints.geometry.attributes.color.array;
+
+        for (let k = 0; k < r.trailMax; k++) {
+          const p = r.trail[k];
+          const idx = k * 3;
+          if (!p) continue;
+
+          tpos[idx] = p.x; tpos[idx + 1] = p.y; tpos[idx + 2] = p.z;
+
+          const fade = 1 - k / (r.trailMax - 1);
+          const c = new THREE.Color().lerpColors(new THREE.Color(0xfff2d0), new THREE.Color(0xff6a2a), 1 - fade);
+          tcol[idx] = c.r * fade;
+          tcol[idx + 1] = c.g * fade;
+          tcol[idx + 2] = c.b * fade;
+        }
+
+        r.trailPoints.geometry.attributes.position.needsUpdate = true;
+        r.trailPoints.geometry.attributes.color.needsUpdate = true;
+
+        if (d < 4.0 || (now - r.birth) > 1700) {
+          scene.remove(r.points);
+          r.points.geometry.dispose();
+          r.points.material.dispose();
+
+          scene.remove(r.trailPoints);
+          r.trailPoints.geometry.dispose();
+          r.trailPoints.material.dispose();
+
+          rockets.splice(i, 1);
+          spawnBurst(r);
+        }
+      }
+
+      // 爆炸阶段
+      for (let i = fireworks.length - 1; i >= 0; i--) {
+        const fw = fireworks[i];
+        const age = now - fw.birth;
+        const p = Math.min(1, age / fw.lifeMs);
+
+        const geo = fw.points.geometry;
+        const positions = geo.attributes.position.array;
+        const colors = geo.attributes.color.array;
+
+        const fadeOpacity = (1 - p);
+        fw.points.material.opacity = Math.max(0, fadeOpacity * fadeOpacity);
+
+        const twinkleStrength = (fw.kind === 'glitter') ? 0.55 : 0.22;
+
+        for (let j = 0; j < fw.velocities.length; j++) {
+          const v = fw.velocities[j];
+          v.multiplyScalar(fw.drag);
+          v.y -= fw.gravity;
+
+          const idx = j * 3;
+          positions[idx] += v.x;
+          positions[idx + 1] += v.y;
+          positions[idx + 2] += v.z;
+
+          const tw = fw.twinkles[j];
+          const flicker = 1.0 - twinkleStrength * (0.5 - 0.5 * Math.sin(now * 0.018 + tw * 12));
+          const k = Math.max(0, (1 - p)) * flicker;
+
+          colors[idx] = colors[idx] * 0.985 + colors[idx] * 0.015 * k;
+          colors[idx + 1] = colors[idx + 1] * 0.985 + colors[idx + 1] * 0.015 * k;
+          colors[idx + 2] = colors[idx + 2] * 0.985 + colors[idx + 2] * 0.015 * k;
+        }
+
+        geo.attributes.position.needsUpdate = true;
+        geo.attributes.color.needsUpdate = true;
+
+        if (p >= 1) {
+          scene.remove(fw.points);
+          fw.points.geometry.dispose();
+          fw.points.material.dispose();
           fireworks.splice(i, 1);
         }
       }
     }
 
-    // ================= 系统启动逻辑（原样保留） =================
+    function launchFireworkBurst(n = 3) {
+      for (let i = 0; i < n; i++) setTimeout(() => createFirework(), i * 260);
+    }
+
+    // ================= 10. 音乐（只写一次，避免 banner 卡死） =================
     const musicUrl = 'https://raw.githubusercontent.com/sun857979566-creator/christmas-tree/main/just%20love%20u.mp3';
     let sound = null;
 
@@ -1049,6 +1506,7 @@
       const listener = new THREE.AudioListener();
       camera.add(listener);
       sound = new THREE.Audio(listener);
+
       const audioLoader = new THREE.AudioLoader();
       const musicBtn = document.getElementById('music_toggle');
       musicBtn.classList.add('off');
@@ -1064,6 +1522,7 @@
       });
     }
 
+    // ================= 11. 系统启动逻辑（banner 点击） =================
     const startBtn = document.getElementById('start_btn');
     const overlay = document.getElementById('overlay');
     const videoElement = document.getElementById('raw_video');
@@ -1071,42 +1530,83 @@
     const canvasCtx = canvasElement.getContext('2d');
     const camWindow = document.getElementById('cam_window');
 
+    const fireworkBtn = document.getElementById('firework_btn');
+    const fireworkHint = document.getElementById('firework_hint');
+
+    fireworkBtn.addEventListener('click', () => launchFireworkBurst(3));
+    window.addEventListener('keydown', (e) => {
+      const k = (e.key || '').toLowerCase();
+      if (k === 'f' || e.code === 'Space') launchFireworkBurst(3);
+    });
+
     startBtn.onclick = async () => {
       if (startBtn.innerText === 'LOADING...') return;
+
       try {
         const audioCtx = THREE.AudioContext.getContext();
         if (audioCtx.state === 'suspended') audioCtx.resume();
+
         startBtn.innerText = 'INITIALIZING...';
         initMusic();
 
-        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}` });
-        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        const hands = new Hands({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
+        });
+        hands.setOptions({
+          maxNumHands: 1,
+          modelComplexity: 1,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
         hands.onResults(onAIResults);
         handLandmarker = hands;
 
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user", width: 320, height: 240 } });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { facingMode: "user", width: 320, height: 240 }
+        });
+
         videoElement.srcObject = stream;
         videoElement.onloadedmetadata = () => {
           videoElement.play();
+
           overlay.style.opacity = '0';
           setTimeout(() => { overlay.style.display = 'none'; }, 800);
+
           camWindow.style.display = 'block';
           document.getElementById('cam_toggle').classList.remove('off');
           document.getElementById('cam_toggle').style.display = 'flex';
           document.getElementById('music_toggle').style.display = 'flex';
+
           canvasElement.width = videoElement.videoWidth;
           canvasElement.height = videoElement.videoHeight;
+
+          fireworkBtn.style.display = 'none';
+          fireworkHint.style.display = 'none';
+
           processVideoFrame();
         };
       } catch (e) {
         console.warn("启动摄像头失败，进入无摄像头调试模式:", e);
+
         startBtn.innerText = 'NO CAMERA MODE';
         setTimeout(() => {
           overlay.style.opacity = '0';
           setTimeout(() => { overlay.style.display = 'none'; }, 800);
+
           camWindow.style.display = 'none';
           document.getElementById('cam_toggle').style.display = 'none';
           document.getElementById('music_toggle').style.display = 'flex';
+
+          fireworkBtn.style.display = 'block';
+          fireworkHint.style.display = 'block';
+
+          // 仍然可播放音乐（如果浏览器允许）
+          try {
+            const audioCtx = THREE.AudioContext.getContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (!sound) initMusic();
+          } catch (_) { }
         }, 500);
       }
     };
@@ -1124,6 +1624,7 @@
 
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
         const landmarks = results.multiHandLandmarks[0];
+
         canvasCtx.lineWidth = 2;
         canvasCtx.strokeStyle = '#FFFF00';
         for (const [start, end] of HAND_CONNECTIONS) {
@@ -1134,15 +1635,17 @@
           canvasCtx.lineTo(p2.x * canvasElement.width, p2.y * canvasElement.height);
           canvasCtx.stroke();
         }
+
         canvasCtx.fillStyle = '#FF0000';
         for (const lm of landmarks) {
           canvasCtx.beginPath();
           canvasCtx.arc(lm.x * canvasElement.width, lm.y * canvasElement.height, 3, 0, 2 * Math.PI);
           canvasCtx.fill();
         }
+
         const currentGesture = detectGesture(landmarks);
         if (!isExploded && lastGesture === 'FIST' && currentGesture === 'OPEN') {
-          for (let i = 0; i < 5; i++) setTimeout(() => createFirework(), i * 200);
+          launchFireworkBurst(4);
         }
         if (currentGesture !== 'BETWEEN') lastGesture = currentGesture;
       }
@@ -1152,17 +1655,19 @@
       const wrist = landmarks[0];
       const fingertips = [8, 12, 16, 20];
       let foldedCount = 0;
+
       fingertips.forEach(idx => {
         const tip = landmarks[idx];
-        const dist = Math.sqrt(Math.pow(tip.x - wrist.x, 2) + Math.pow(tip.y - wrist.y, 2));
+        const dist = Math.sqrt((tip.x - wrist.x) ** 2 + (tip.y - wrist.y) ** 2);
         if (dist < 0.15) foldedCount++;
       });
+
       if (foldedCount >= 3) return 'FIST';
       if (foldedCount === 0) return 'OPEN';
       return 'BETWEEN';
     }
 
-    // ================= 交互逻辑（原样 + 礼物二次点击爆开） =================
+    // ================= 12. 交互逻辑（树爆开、选中放大、礼物二次点击爆彩纸、文字再点退出） =================
     let isDraggingCam = false;
     let camDragStartX = 0;
     let camDragStartY = 0;
@@ -1189,6 +1694,7 @@
       if (isDraggingCam) return;
       touchStartTime = Date.now();
       touchStartPos.set(event.touches[0].clientX, event.touches[0].clientY);
+
       if (event.touches.length > 1) {
         isMultiTouch = true;
         if (activeUUID) {
@@ -1285,6 +1791,7 @@
       if (!isInspectionDragging || !activeUUID) return;
       const obj = floatingObjects.find(o => o.uuid === activeUUID);
       if (!obj || !obj.userData.isTreeTop) return;
+
       const deltaX = event.clientX - previousMouse.x;
       const deltaY = event.clientY - previousMouse.y;
       obj.rotation.y += deltaX * (isMobile ? 0.008 : 0.005);
@@ -1325,6 +1832,7 @@
       if (!activeUUID) return;
       const obj = floatingObjects.find(o => o.uuid === activeUUID);
       if (!obj || (!obj.userData.isTreeTop && obj.userData.pickType !== 'photo')) return;
+
       obj.userData.currentInspectionScale += deltaY * -0.001;
       obj.userData.currentInspectionScale = clamp(obj.userData.currentInspectionScale, 0.5, 4.0);
     }
@@ -1351,10 +1859,12 @@
     function triggerExplosionOrReset() {
       if (activeUUID) { unpinCurrent(); return; }
       isExploded = !isExploded;
+
       isCameraMoving = true;
       controls.enabled = false;
       if (isExploded) targetCameraPos.copy(camera.userData.orbitPos);
       else targetCameraPos.copy(camera.userData.treePos);
+
       if (!isExploded) {
         const top = floatingObjects.find(o => o.userData && o.userData.isTreeTop);
         if (top) top.userData.treeFacingSet = false;
@@ -1363,10 +1873,11 @@
 
     function pinObject(root) {
       unpinCurrent();
+
       activeUUID = root.uuid;
       root.userData.pinned = true;
-      scene.updateMatrixWorld(true);
 
+      scene.updateMatrixWorld(true);
       const r = getWorldRadius(root);
       const baseDist = isMobile ? 70 : 60;
       const dist = clamp(Math.max(baseDist, computeSafeDistance(r)), 10, camera.far - 80);
@@ -1377,9 +1888,8 @@
         root.userData.currentInspectionScale = root.userData.inspectionBaseScale;
         controls.enabled = false;
       } else {
-        if (root.userData.pickType === 'gift' || root.type === 'Group') {
-          faceCameraUprightY(root);
-        } else if (root.userData.pickType === 'photo') {
+        if (root.userData.pickType === 'gift' || root.type === 'Group') faceCameraUprightY(root);
+        else if (root.userData.pickType === 'photo') {
           root.lookAt(camera.position);
           root.userData.currentInspectionScale = root.userData.inspectionBaseScale;
           document.getElementById('swipe_hint').style.opacity = 1;
@@ -1391,11 +1901,12 @@
       }
     }
 
-    // ✅ 关键：文字显示后点一下退出；礼物二次点击爆开
+    // 点击选中/礼物二次点击爆开/文字点击退出
     window.addEventListener('pointerup', (event) => {
       if (isDraggingCam) return;
 
-      if (giftTextEl && giftTextEl.style.display === 'block') {
+      // 文字显示时：再点退出回漂浮状态
+      if (giftTextEl.style.display === 'block') {
         hideGiftText();
         if (activeUUID) unpinCurrent();
         return;
@@ -1410,6 +1921,7 @@
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
 
+      // 豹警官胸口文字开关
       if (activeUUID) {
         const currentObj = floatingObjects.find(o => o.uuid === activeUUID);
         if (currentObj && currentObj.userData.isTreeTop) {
@@ -1425,10 +1937,15 @@
       }
 
       const intersects = raycaster.intersectObjects(floatingObjects, true);
-      const roots = []; const seen = new Set();
+      const roots = [];
+      const seen = new Set();
+
       for (const hit of intersects) {
         const root = findInteractiveRoot(hit.object);
-        if (root && !seen.has(root.uuid)) { seen.add(root.uuid); roots.push(root); }
+        if (root && !seen.has(root.uuid)) {
+          seen.add(root.uuid);
+          roots.push(root);
+        }
       }
 
       if (roots.length === 0) {
@@ -1440,12 +1957,10 @@
         return;
       }
 
-      if (activeUUID && roots[0].uuid === activeUUID && roots[0].userData.isTreeTop) return;
-
       let chosen = roots.find(r => r.userData.pickType === 'gift');
       if (!chosen) chosen = roots[0];
 
-      // ✅ 第二次点击同一个礼物 -> 爆开
+      // 礼物二次点击：爆开彩纸 + 文字
       if (activeUUID && chosen.uuid === activeUUID && chosen.userData.pickType === 'gift') {
         openGiftBox(chosen);
         return;
@@ -1457,11 +1972,20 @@
 
     window.addEventListener('dblclick', () => { triggerExplosionOrReset(); });
 
+    // ================= 13. 相机位置 & 动画循环 =================
     function updateCameraPosition() {
       const aspect = window.innerWidth / window.innerHeight;
-      if (aspect < 1) { camera.userData.treePos = new THREE.Vector3(0, 5, 110); camera.userData.orbitPos = new THREE.Vector3(0, 30, 280); }
-      else { camera.userData.treePos = new THREE.Vector3(0, 5, 80); camera.userData.orbitPos = new THREE.Vector3(0, 40, 280); }
-      if (!camera.userData.isInitialized) { camera.position.copy(camera.userData.treePos); camera.userData.isInitialized = true; }
+      if (aspect < 1) {
+        camera.userData.treePos = new THREE.Vector3(0, 5, 110);
+        camera.userData.orbitPos = new THREE.Vector3(0, 30, 280);
+      } else {
+        camera.userData.treePos = new THREE.Vector3(0, 5, 80);
+        camera.userData.orbitPos = new THREE.Vector3(0, 40, 280);
+      }
+      if (!camera.userData.isInitialized) {
+        camera.position.copy(camera.userData.treePos);
+        camera.userData.isInitialized = true;
+      }
     }
 
     function animate() {
@@ -1473,6 +1997,7 @@
         const sparkle = Math.sin(t * 10 + bulb.userData.blinkOffset) * 0.5 + Math.sin(t * 25 + bulb.userData.blinkOffset * 2) * 0.3;
         bulb.material.emissiveIntensity = 2.5 + sparkle * 1.5;
       });
+
       updateFireworks();
 
       if (isCameraMoving) {
@@ -1480,7 +2005,6 @@
         camera.lookAt(0, 5, 0);
         if (camera.position.distanceTo(targetCameraPos) < 1.0) {
           isCameraMoving = false;
-          // ✅ 修复：pin 豹警官时，不要把 controls 又开回去
           controls.enabled = (activeUUID === null);
           controls.update();
         }
@@ -1488,7 +2012,10 @@
         controls.update();
       }
 
-      if (!isExploded) { starMesh.rotation.y += 0.0003; starMesh.rotation.x += 0.0001; }
+      if (!isExploded) {
+        starMesh.rotation.y += 0.0003;
+        starMesh.rotation.x += 0.0001;
+      }
 
       const lerpSpeed = 0.02;
 
@@ -1523,6 +2050,7 @@
           const topPoint = getTreeTopWorldPoint(tmpV3c);
           topPoint.y -= 1.5;
           snapBottomCenterToWorldPoint(obj, topPoint);
+
           if (!obj.userData.treeFacingSet) {
             obj.rotation.x = 0; obj.rotation.z = 0;
             obj.rotation.y = (obj.userData.yawOffset || 0);
@@ -1566,6 +2094,7 @@
     updateCameraPosition();
     animate();
 
+    // ================= 14. 顶部按钮 =================
     const camToggleBtn = document.getElementById('cam_toggle');
     const musicToggleBtn = document.getElementById('music_toggle');
 
